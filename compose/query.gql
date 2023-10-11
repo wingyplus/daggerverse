@@ -1,0 +1,13 @@
+{
+  compose {
+    withFile(path: "docker-compose.yaml") { 
+      from(address: "alpine") {
+        withExec(args: ["apk", "add", "curl"]) {
+          withExec(args: ["curl", "http://nginx"]) {
+            stdout
+          }
+        }
+      }
+    }
+  } 
+}
