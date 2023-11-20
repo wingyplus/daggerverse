@@ -4,7 +4,9 @@
       from(address: "alpine") {
         withExec(args: ["apk", "add", "curl"]) {
           withExec(args: ["curl", "http://nginx"]) {
-            stdout
+            withExec(args: ["env"]) {
+              stdout
+            }
           }
         }
       }

@@ -5,3 +5,5 @@ services:
     image: nginx:alpine
     ports:
       - '8080:80'
+    environment:
+      HELLO: 'world'

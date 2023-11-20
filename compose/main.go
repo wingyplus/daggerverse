@@ -68,5 +68,9 @@ func buildContainer(client *Client, svc types.ServiceConfig) *Container {
 		container = container.WithExposedPort(int(port.Target))
 	}
 
+	for k, v := range svc.Environment {
+		container = container.WithEnvVariable(k, *v)
+	}
+
 	return container
 }
