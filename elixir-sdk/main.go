@@ -10,16 +10,19 @@ const (
 	ModSourceDirPath     = "/src"
 	sdkSrc               = "/sdk"
 	genDir               = "sdk"
-	genPath              = "lib/dagger/gen"
 	schemaPath           = "/schema.json"
 	defaultElixirVersion = "1.16.1-erlang-26.2.2-debian-bookworm-20240130-slim"
 )
 
-func New() *ElixirSdk {
-	return &ElixirSdk{RequiredPaths: []string{}}
+func New(
+	// +optional
+	sdkSourceDir *Directory,
+) *ElixirSdk {
+	return &ElixirSdk{SDKSourceDir: sdkSourceDir, RequiredPaths: []string{}}
 }
 
 type ElixirSdk struct {
+	SDKSourceDir  *Directory
 	RequiredPaths []string
 }
 
@@ -28,11 +31,7 @@ func (m *ElixirSdk) ModuleRuntime(
 	modSource *ModuleSource,
 	introspectionJson string,
 ) (*Container, error) {
-	ctr, err := m.CodegenBase(ctx, modSource, introspectionJson)
-	if err != nil {
-		return nil, fmt.Errorf("could not load module config: %v", err)
-	}
-	return ctr, nil
+	return m.Base(""), nil
 }
 
 func (m *ElixirSdk) Codegen(ctx context.Context, modSource *ModuleSource, introspectionJson string) (*GeneratedCode, error) {
@@ -46,27 +45,35 @@ func (m *ElixirSdk) Codegen(ctx context.Context, modSource *ModuleSource, intros
 		WithVCSIgnoredPaths([]string{genDir}), nil
 }
 
+// dagger
+//
+//	- sdk
+//	- lib
+//	- mix.exs
+//    - add sdk as a dependency
+
 func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, introspectionJson string) (*Container, error) {
 	subPath, err := modSource.SourceSubpath(ctx)
 	if err != nil {
 		return nil, err
 	}
 	ctr := m.Base("").
-		WithExec([]string{"git", "clone", "--depth", "1", "-b", "elixir-new-codegen", "https://github.com/wingyplus/dagger.git", "/dagger"}).
-		WithWorkdir("/dagger/sdk/elixir/dagger_codegen").
-		WithExec([]string{"mix", "deps.get"}).
-		WithExec([]string{"mix", "escript.install", "--force"}).
+		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).
+		WithExec([]string{"mix", "escript.install",
+			"github", "wingyplus/dagger", "branch", "elixir-new-codegen",
+			"--sparse", "sdk/elixir/dagger_codegen", "--force"}).
 		WithNewFile(schemaPath, ContainerWithNewFileOpts{
 			Contents: introspectionJson,
 		}).
 		WithWorkdir(path.Join(ModSourceDirPath, subPath)).
 		WithExec([]string{
 			"dagger_codegen", "generate",
-			"--outdir", path.Join(sdkSrc, genPath),
+			"--outdir", "./sdk/lib/dagger/gen",
 			"--introspection", schemaPath,
 		})
+		// WithExec([]string{"sh", "-c", "ls -lah /src && exit 1"})
 
-	return ctr.WithDirectory(genDir, ctr.Directory(sdkSrc)), nil
+	return ctr, nil
 }
 
 func (m *ElixirSdk) Base(version string) *Container {
