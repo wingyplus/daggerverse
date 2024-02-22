@@ -70,6 +70,9 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 			"dagger_codegen", "generate",
 			"--outdir", "./sdk/lib/dagger/gen",
 			"--introspection", schemaPath,
+		}).
+		WithExec([]string{
+			"mix", "format", "./sdk/lib/dagger/gen/*.ex",
 		})
 		// WithExec([]string{"sh", "-c", "ls -lah /src && exit 1"})
 
@@ -87,7 +90,7 @@ func (m *ElixirSdk) Base(version string) *Container {
 		WithExec([]string{"apt", "install", "-y", "--no-install-recommends", "git"}).
 		WithExec([]string{"mix", "local.hex", "--force"}).
 		WithExec([]string{"mix", "local.rebar", "--force"}).
-		WithEnvVariable("CACHE_BURST", "1").
+		WithEnvVariable("CACHE_BURST", "2").
 		WithEnvVariable("PATH", "/root/.mix/escripts:$PATH", ContainerWithEnvVariableOpts{
 			Expand: true,
 		})
