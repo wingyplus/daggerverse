@@ -57,6 +57,9 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 	if err != nil {
 		return nil, err
 	}
+
+	core := dag.Git("https://github.com/wingyplus/dagger").Branch("elixir-new-codegen").Tree().Directory("sdk/elixir/lib/dagger/core")
+
 	ctr := m.Base("").
 		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).
 		WithExec([]string{"mix", "escript.install",
@@ -66,13 +69,15 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 			Contents: introspectionJson,
 		}).
 		WithWorkdir(path.Join(ModSourceDirPath, subPath)).
+		WithExec([]string{"mix", "new", "."}).
 		WithExec([]string{
 			"dagger_codegen", "generate",
-			"--outdir", "./sdk/lib/dagger/gen",
+			"--outdir", "lib/dagger/gen",
 			"--introspection", schemaPath,
 		}).
+		WithDirectory("lib/dagger/core", core).
 		WithExec([]string{
-			"mix", "format", "./sdk/lib/dagger/gen/*.ex",
+			"mix", "format",
 		})
 		// WithExec([]string{"sh", "-c", "ls -lah /src && exit 1"})
 
