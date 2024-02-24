@@ -67,7 +67,7 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 		return nil, err
 	}
 
-	sdkModules := dag.Git("https://github.com/wingyplus/dagger").Branch("elixir-new-codegen").Tree().Directory("sdk/elixir/lib")
+	sdkModules := dag.Git("https://github.com/wingyplus/dagger").Branch("fix-query-builder").Tree().Directory("sdk/elixir/lib")
 
 	ctr := m.Base("").
 		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).

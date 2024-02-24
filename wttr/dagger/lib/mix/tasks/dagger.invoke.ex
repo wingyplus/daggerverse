@@ -18,11 +18,10 @@ defmodule Mix.Tasks.Dagger.Invoke do
            invoke(dag, parent, parent_name, fn_name, input_args),
          json = encode(result),
          {:ok, _} <- Dagger.FunctionCall.return_value(fn_call, json) do
-      File.write!("/.daggermod/output.json", json)
       :ok
     else
       {:error, reason} ->
-        IO.puts(reason)
+        IO.puts(inspect(reason))
         System.halt(2)
     end
   after
