@@ -45,7 +45,9 @@ func (m *ElixirSdk) ModuleRuntime(
 
 	return ctr.
 		WithExec([]string{"mix", "deps.get"}).
-		WithEntrypoint([]string{"sh", "-c", "cd " + entrypoint + " && mix do deps.get + dagger.invoke"}), nil
+		WithEntrypoint([]string{"mix", "cmd",
+			"--cd", entrypoint,
+			"mix do deps.get + dagger.invoke"}), nil
 }
 
 func (m *ElixirSdk) Codegen(ctx context.Context, modSource *ModuleSource, introspectionJson string) (*GeneratedCode, error) {
