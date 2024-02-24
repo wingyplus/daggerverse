@@ -16,7 +16,9 @@ defmodule Mix.Tasks.Dagger.Invoke do
          {:ok, input_args} <- Dagger.FunctionCall.input_args(fn_call),
          {:ok, result} <-
            invoke(dag, parent, parent_name, fn_name, input_args),
-         {:ok, _} <- Dagger.FunctionCall.return_value(fn_call, encode(result)) do
+         json = encode(result),
+         {:ok, _} <- Dagger.FunctionCall.return_value(fn_call, json) do
+      File.write!("/.daggermod/output.json", json)
       :ok
     else
       {:error, reason} ->
@@ -54,6 +56,7 @@ defmodule Mix.Tasks.Dagger.Invoke do
           |> Dagger.Client.type_def()
           |> Dagger.TypeDef.with_kind(Dagger.TypeDefKind.string_kind())
         )
+        # TODO: fetch document with `Code.fetch_docs/1`.
         |> Dagger.Function.with_description("""
         Reports the weather.
 

@@ -5,8 +5,6 @@ defmodule Wttr do
 
   defstruct [:dag]
 
-  # Q: How to register the function?
-  # Q: Which ways to start invoking this module?
   # Q: How to injecting arguments to the module function?
   @doc """
   Reports the weather.
