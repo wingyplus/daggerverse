@@ -31,7 +31,21 @@ func (m *ElixirSdk) ModuleRuntime(
 	modSource *ModuleSource,
 	introspectionJson string,
 ) (*Container, error) {
-	return m.Base(""), nil
+	ctr, err := m.CodegenBase(ctx, modSource, introspectionJson)
+	if err != nil {
+		return nil, err
+	}
+
+	subPath, err := modSource.SourceSubpath(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	entrypoint := path.Join(ModSourceDirPath, subPath)
+
+	return ctr.
+		WithExec([]string{"mix", "deps.get"}).
+		WithEntrypoint([]string{"sh", "-c", "cd " + entrypoint + " && mix do deps.get + dagger.invoke"}), nil
 }
 
 func (m *ElixirSdk) Codegen(ctx context.Context, modSource *ModuleSource, introspectionJson string) (*GeneratedCode, error) {
@@ -45,20 +59,13 @@ func (m *ElixirSdk) Codegen(ctx context.Context, modSource *ModuleSource, intros
 		WithVCSIgnoredPaths([]string{genDir}), nil
 }
 
-// dagger
-//
-//	- sdk
-//	- lib
-//	- mix.exs
-//    - add sdk as a dependency
-
 func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, introspectionJson string) (*Container, error) {
 	subPath, err := modSource.SourceSubpath(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sdkModules := dag.Git("https://github.com/wingyplus/dagger").Branch("elixir-new-codegen").Tree().Directory("sdk/elixir/lib/dagger")
+	sdkModules := dag.Git("https://github.com/wingyplus/dagger").Branch("elixir-new-codegen").Tree().Directory("sdk/elixir/lib")
 
 	ctr := m.Base("").
 		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).
@@ -69,8 +76,9 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 			Contents: introspectionJson,
 		}).
 		WithWorkdir(path.Join(ModSourceDirPath, subPath)).
-		WithDirectory("lib/dagger", sdkModules, ContainerWithDirectoryOpts{Exclude: []string{"gen"}}).
 		WithExec([]string{"mix", "new", "."}).
+		WithDirectory("lib/dagger", sdkModules.Directory("dagger"), ContainerWithDirectoryOpts{Exclude: []string{"gen"}}).
+		WithFile("lib/dagger.ex", sdkModules.File("dagger.ex")).
 		WithExec([]string{
 			"dagger_codegen", "generate",
 			"--outdir", "lib/dagger/gen",
