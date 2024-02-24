@@ -25,6 +25,7 @@ defmodule Dagger.Core.QueryBuilder.Selection do
 
   def put_arg(%__MODULE__{args: args} = selection, name, value) when is_binary(name) do
     args = args || %{}
+
     %{selection | args: Map.put(args, name, value)}
   end
 
@@ -64,6 +65,9 @@ defmodule Dagger.Core.QueryBuilder.Selection do
   defp encode_value(value) when is_binary(value) do
     string =
       value
+      |> String.replace("\\", "\\\\")
+      |> String.replace("\n", "\\n")
+      |> String.replace("\r", "\\r")
       |> String.replace("\n", "\\n")
       |> String.replace("\t", "\\t")
       |> String.replace("\"", "\\\"")

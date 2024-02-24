@@ -25,6 +25,18 @@ defmodule Dagger.Client do
     }
   end
 
+  @doc "Retrieves a container builtin to the engine."
+  @spec builtin_container(t(), String.t()) :: Dagger.Container.t()
+  def builtin_container(%__MODULE__{} = client, digest) do
+    selection =
+      client.selection |> select("builtinContainer") |> put_arg("digest", digest)
+
+    %Dagger.Container{
+      selection: selection,
+      client: client.client
+    }
+  end
+
   @doc "Constructs a cache volume for a given cache key."
   @spec cache_volume(t(), String.t()) :: Dagger.CacheVolume.t()
   def cache_volume(%__MODULE__{} = client, key) do
