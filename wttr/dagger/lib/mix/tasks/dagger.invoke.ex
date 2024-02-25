@@ -56,6 +56,13 @@ defmodule Mix.Tasks.Dagger.Invoke do
           |> Dagger.TypeDef.with_kind(Dagger.TypeDefKind.string_kind())
         )
         |> Dagger.Function.with_description(doc_for(Wttr, :wttr))
+        |> Dagger.Function.with_arg(
+          "location",
+          dag
+          |> Dagger.Client.type_def()
+          |> Dagger.TypeDef.with_kind(Dagger.TypeDefKind.string_kind()),
+          description: "The location"
+        )
       )
     )
     |> Dagger.Module.id()
@@ -65,8 +72,17 @@ defmodule Mix.Tasks.Dagger.Invoke do
     {:error, "unknown object #{parent_name}"}
   end
 
-  def invoke_function(ctx, _parent, "Wttr", _input_args) do
-    {:ok, Wttr.wttr(ctx)}
+  def invoke_function(ctx, _parent, "Wttr", input_args) do
+    args =
+      input_args
+      |> Enum.map(fn arg ->
+        {:ok, name} = Dagger.FunctionCallArgValue.name(arg)
+        {:ok, value} = Dagger.FunctionCallArgValue.value(arg)
+        {name, Jason.decode!(value)}
+      end)
+      |> Enum.into(%{}, fn {name, value} -> {String.to_existing_atom(name), value} end)
+
+    {:ok, Wttr.wttr(ctx, args)}
   end
 
   defp doc_for(module, fn_name) do
