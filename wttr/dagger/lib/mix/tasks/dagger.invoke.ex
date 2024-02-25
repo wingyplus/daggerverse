@@ -55,16 +55,7 @@ defmodule Mix.Tasks.Dagger.Invoke do
           |> Dagger.Client.type_def()
           |> Dagger.TypeDef.with_kind(Dagger.TypeDefKind.string_kind())
         )
-        # TODO: fetch document with `Code.fetch_docs/1`.
-        |> Dagger.Function.with_description("""
-        Reports the weather.
-
-        ## Example
-
-        ```
-        $ dagger call wttr
-        ```
-        """)
+        |> Dagger.Function.with_description(doc_for(Wttr, :wttr))
       )
     )
     |> Dagger.Module.id()
@@ -77,4 +68,19 @@ defmodule Mix.Tasks.Dagger.Invoke do
   def invoke_function(ctx, _parent, "Wttr", _input_args) do
     {:ok, Wttr.wttr(ctx)}
   end
+
+  defp doc_for(module, fn_name) do
+    {:docs_v1, _annotation, :elixir, _format, _module_doc, _meta, docs} = Code.fetch_docs(module)
+
+    case Enum.find(docs, &find_doc(&1, fn_name)) do
+      nil -> ""
+      {_, _, _, %{"en" => doc}, _} -> doc
+    end
+  end
+
+  defp find_doc({{:function, fn_name, _}, _, _, _, _}, fn_name) do
+    true
+  end
+
+  defp find_doc(_, _), do: false
 end

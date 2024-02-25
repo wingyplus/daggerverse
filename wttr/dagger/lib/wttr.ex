@@ -14,8 +14,6 @@ defmodule Wttr do
   ```
   $ dagger call wttr
   ```
-
-  NOTE: `ctx` is wttr struct.
   """
   def wttr(this) do
     this.dag
