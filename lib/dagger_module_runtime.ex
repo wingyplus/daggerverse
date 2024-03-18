@@ -34,13 +34,21 @@ defmodule Dagger.ModuleRuntime do
     end
   end
 
-  defmacro __using__(_) do
-    quote do
+  defmacro __using__(opt) do
+    unless opt[:name] do
+      raise "Module name must be define."
+    end
+
+    name = opt[:name]
+
+    quote bind_quoted: [name: name] do
       import Dagger.ModuleRuntime
 
+      @name name
       @on_definition Dagger.ModuleRuntime
       @functions []
 
+      Module.register_attribute(__MODULE__, :name, persist: true)
       Module.register_attribute(__MODULE__, :functions, persist: true)
     end
   end

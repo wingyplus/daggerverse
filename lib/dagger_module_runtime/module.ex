@@ -12,13 +12,16 @@ defmodule Dagger.ModuleRuntime.Module do
   end
 
   defp define_object(dag, module) do
+    attrs = module.__info__(:attributes)
+    mod_name = Keyword.fetch!(attrs, :name)
+    functions = Keyword.fetch!(attrs, :functions)
+
     type_def =
       dag
       |> Dagger.Client.type_def()
-      |> Dagger.TypeDef.with_object(Helper.camelize(module))
+      |> Dagger.TypeDef.with_object(Helper.camelize(mod_name))
 
-    module.__info__(:attributes)
-    |> Keyword.fetch!(:functions)
+    functions
     |> Enum.map(&Function.define(dag, &1))
     |> Enum.reduce(
       type_def,
