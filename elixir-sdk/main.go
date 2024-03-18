@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"strings"
 )
 
 const (
@@ -36,15 +37,20 @@ func (m *ElixirSdk) ModuleRuntime(
 		return nil, err
 	}
 
+	modName, err := modSource.ModuleName(ctx)
+	if err != nil {
+		return nil, err
+	}
 	subPath, err := modSource.SourceSubpath(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	entrypoint := path.Join(ModSourceDirPath, subPath)
+	// TODO: clean me up.
+	mod := strings.Replace(modName, "-", "_", -1)
+	entrypoint := path.Join(ModSourceDirPath, subPath, mod)
 
 	return ctr.
-		WithExec([]string{"mix", "deps.get"}).
 		WithEntrypoint([]string{"mix", "cmd",
 			"--cd", entrypoint,
 			"mix do deps.get + dagger.invoke"}), nil
@@ -62,12 +68,19 @@ func (m *ElixirSdk) Codegen(ctx context.Context, modSource *ModuleSource, intros
 }
 
 func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, introspectionJson string) (*Container, error) {
+	modName, err := modSource.ModuleName(ctx)
+	if err != nil {
+		return nil, err
+	}
 	subPath, err := modSource.SourceSubpath(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sdkModules := dag.Git("https://github.com/wingyplus/dagger").Branch("fix-query-builder").Tree().Directory("sdk/elixir/lib")
+	sdk := dag.Git("https://github.com/wingyplus/dagger").Branch("elixir-new-codegen").Tree().Directory("sdk/elixir")
+	sdkRuntime := dag.Git("https://github.com/wingyplus/dagger_module_runtime").Branch("main").Tree()
+
+	mod := strings.Replace(modName, "-", "_", -1)
 
 	ctr := m.Base("").
 		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).
@@ -78,9 +91,9 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 			Contents: introspectionJson,
 		}).
 		WithWorkdir(path.Join(ModSourceDirPath, subPath)).
-		WithExec([]string{"mix", "new", "."}).
-		WithDirectory("lib/dagger", sdkModules.Directory("dagger"), ContainerWithDirectoryOpts{Exclude: []string{"gen"}}).
-		WithFile("lib/dagger.ex", sdkModules.File("dagger.ex")).
+		WithDirectory("dagger_module_runtime", sdkRuntime, ContainerWithDirectoryOpts{Exclude: []string{"test", "scripts", "*.md"}}).
+		WithDirectory("dagger", sdk, ContainerWithDirectoryOpts{Exclude: []string{"dagger_codegen", "test", "scripts", "*.livemd", "*.md"}}).
+		WithWorkdir(path.Join(ModSourceDirPath, subPath, "dagger")).
 		WithExec([]string{
 			"dagger_codegen", "generate",
 			"--outdir", "lib/dagger/gen",
@@ -88,9 +101,15 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 		}).
 		WithExec([]string{
 			"mix", "format",
-		})
-		// WithExec([]string{"sh", "-c", "ls -lah /src && exit 1"})
+		}).
+		WithWorkdir(path.Join(ModSourceDirPath, subPath))
 
+	// Project not exists.
+	if _, err = ctr.Directory(mod).File("mix.exs").Contents(ctx); err != nil {
+		// TODO: overwrite mix.exs to add dagger and dagger_module_runtime as a dependencies.
+		return ctr.
+			WithExec([]string{"mix", "new", mod}), nil
+	}
 	return ctr, nil
 }
 
@@ -105,7 +124,6 @@ func (m *ElixirSdk) Base(version string) *Container {
 		WithExec([]string{"apt", "install", "-y", "--no-install-recommends", "git"}).
 		WithExec([]string{"mix", "local.hex", "--force"}).
 		WithExec([]string{"mix", "local.rebar", "--force"}).
-		WithEnvVariable("CACHE_BURST", "2").
 		WithEnvVariable("PATH", "/root/.mix/escripts:$PATH", ContainerWithEnvVariableOpts{
 			Expand: true,
 		})
