@@ -4,8 +4,7 @@ defmodule Dagger.ModuleRuntime.Function do
   @doc """
   Define a Dagger function.
   """
-  def define(dag, fun_def) do
-    name = Keyword.fetch!(fun_def, :name)
+  def define(dag, {name, fun_def}) do
     # args = fun_def[:args] || []
     return = Keyword.fetch!(fun_def, :return)
 

@@ -17,8 +17,8 @@ defmodule Dagger.ModuleRuntime.Module do
       |> Dagger.Client.type_def()
       |> Dagger.TypeDef.with_object(Helper.camelize(module))
 
-    module
-    |> Module.get_attribute(:functions)
+    module.__info__(:attributes)
+    |> Keyword.fetch!(:functions)
     |> Enum.map(&Function.define(dag, &1))
     |> Enum.reduce(
       type_def,
