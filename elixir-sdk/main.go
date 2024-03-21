@@ -56,7 +56,11 @@ func (m *ElixirSdk) ModuleRuntime(
 			"mix do deps.get + dagger.invoke"}), nil
 }
 
-func (m *ElixirSdk) Codegen(ctx context.Context, modSource *ModuleSource, introspectionJson string) (*GeneratedCode, error) {
+func (m *ElixirSdk) Codegen(
+	ctx context.Context,
+	modSource *ModuleSource,
+	introspectionJson string,
+) (*GeneratedCode, error) {
 	ctr, err := m.CodegenBase(ctx, modSource, introspectionJson)
 	if err != nil {
 		return nil, fmt.Errorf("could not load module config: %v", err)
@@ -67,7 +71,11 @@ func (m *ElixirSdk) Codegen(ctx context.Context, modSource *ModuleSource, intros
 		WithVCSIgnoredPaths([]string{genDir}), nil
 }
 
-func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, introspectionJson string) (*Container, error) {
+func (m *ElixirSdk) CodegenBase(
+	ctx context.Context,
+	modSource *ModuleSource,
+	introspectionJson string,
+) (*Container, error) {
 	modName, err := modSource.ModuleName(ctx)
 	if err != nil {
 		return nil, err
@@ -86,6 +94,7 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 
 	ctr := m.Base("").
 		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).
+		WithMountedDirectory(sdkSrc, dag.CurrentModule().Source()).
 		WithExec([]string{"mix", "escript.install",
 			"github", "wingyplus/dagger", "branch", "elixir-new-codegen",
 			"--sparse", "sdk/elixir/dagger_codegen", "--force"}).
@@ -127,8 +136,12 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 	// Project not exists.
 	if _, err = ctr.Directory(mod).File("mix.exs").Sync(ctx); err != nil {
 		// TODO: overwrite mix.exs to add dagger and dagger_module_runtime as a dependencies.
-		return ctr.
-			WithExec([]string{"mix", "new", mod}), nil
+		ctr := ctr.
+			WithExec([]string{"mix", "new", mod}).
+			WithExec([]string{"sh", "-c", "elixir /sdk/template.exs gen_mix_exs " + mod + " > " + mod + "/mix.exs"}).
+			WithExec([]string{"sh", "-c", "elixir /sdk/template.exs gen_module " + mod + " > " + mod + "/lib/" + mod + ".ex"})
+
+		return ctr, nil
 	}
 	return ctr, nil
 }
