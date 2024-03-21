@@ -78,7 +78,6 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 	}
 
 	sdk := dag.Git("https://github.com/wingyplus/dagger").Branch("elixir-new-codegen").Tree().Directory("sdk/elixir")
-	sdkRuntime := dag.Git("https://github.com/wingyplus/dagger_module_runtime").Branch("main").Tree()
 
 	mod := strings.Replace(modName, "-", "_", -1)
 
@@ -91,7 +90,7 @@ func (m *ElixirSdk) CodegenBase(ctx context.Context, modSource *ModuleSource, in
 			Contents: introspectionJson,
 		}).
 		WithWorkdir(path.Join(ModSourceDirPath, subPath)).
-		WithDirectory("dagger_module_runtime", sdkRuntime, ContainerWithDirectoryOpts{Exclude: []string{"test", "scripts", "*.md"}}).
+		WithDirectory("dagger_module_runtime", dag.CurrentModule().Source().Directory("./dagger_module_runtime"), ContainerWithDirectoryOpts{Exclude: []string{"test", "scripts", "*.md"}}).
 		WithDirectory("dagger", sdk, ContainerWithDirectoryOpts{Exclude: []string{"dagger_codegen", "test", "scripts", "*.livemd", "*.md"}}).
 		WithWorkdir(path.Join(ModSourceDirPath, subPath, "dagger")).
 		WithExec([]string{
