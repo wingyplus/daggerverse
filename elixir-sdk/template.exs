@@ -18,6 +18,18 @@ defmodule Main do
     |> IO.puts()
   end
 
+  def run(["gen_mix_task", module]) do
+    render_mix_task(application: ":#{Macro.underscore(module)}")
+    |> IO.puts()
+  end
+
+  def run(["gen_application", module]) do
+    module = normalize_name(module)
+
+    render_application(module: Macro.camelize(module))
+    |> IO.puts()
+  end
+
   defp normalize_name(module) do
     String.replace(module, "-", "_")
   end
@@ -38,7 +50,8 @@ defmodule Main do
 
     def application do
       [
-        extra_applications: [:logger]
+        extra_applications: [:logger],
+        mod: {<%= @module %>.Application, []}
       ]
     end
 
@@ -67,18 +80,58 @@ defmodule Main do
       args: [
         string_arg: [type: :string]
       ],
-      return: Dagger.Container
+      return: :string
     ]
     def container_echo(self, args) do
       self.dag
       |> Dagger.Client.container()
       |> Dagger.Container.from("alpine:latest")
       |> Dagger.Container.with_exec(~w"echo \#{args.string_arg}")
+      |> Dagger.Container.stdout()
     end
   end
   """
 
   EEx.function_from_string(:def, :render_module, @module_ex, [:assigns])
+
+  @mix_task_ex """
+  defmodule Mix.Tasks.Dagger.Invoke do
+    use Mix.Task
+
+    def run(_args) do
+      Application.ensure_all_started(:dagger)
+      Application.ensure_all_started(<%= @application %>)
+      Dagger.ModuleRuntime.invoke()
+    end
+  end
+  """
+
+  EEx.function_from_string(:def, :render_mix_task, @mix_task_ex, [:assigns])
+
+  @application_ex """
+  defmodule <%= @module %>.Application do
+    # See https://hexdocs.pm/elixir/Application.html
+    # for more information on OTP Applications
+    @moduledoc false
+
+    use Application
+
+    @impl true
+    def start(_type, _args) do
+      children = [
+        Dagger.ModuleRuntime.Registry, 
+        <%= @module %>
+      ]
+
+      # See https://hexdocs.pm/elixir/Supervisor.html
+      # for other strategies and supported options
+      opts = [strategy: :one_for_one, name: Potato.Supervisor]
+      Supervisor.start_link(children, opts)
+    end
+  end
+  """
+
+  EEx.function_from_string(:def, :render_application, @application_ex, [:assigns])
 end
 
 Main.run(System.argv())

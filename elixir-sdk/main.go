@@ -102,6 +102,8 @@ func (m *ElixirSdk) CodegenBase(
 			Contents: introspectionJson,
 		}).
 		WithWorkdir(path.Join(ModSourceDirPath, subPath)).
+		// TODO(wingyplus): dagger_module_runtime should embeded in the main
+		// sdk to reduce complexity.
 		WithDirectory(
 			"dagger_module_runtime",
 			dag.CurrentModule().Source().Directory("./dagger_module_runtime"),
@@ -135,11 +137,13 @@ func (m *ElixirSdk) CodegenBase(
 
 	// Project not exists.
 	if _, err = ctr.Directory(mod).File("mix.exs").Sync(ctx); err != nil {
-		// TODO: overwrite mix.exs to add dagger and dagger_module_runtime as a dependencies.
 		ctr := ctr.
-			WithExec([]string{"mix", "new", mod}).
+			WithExec([]string{"mix", "new", "--sup", mod}).
+			WithExec([]string{"mkdir", "-p", mod + "/lib/mix/tasks"}).
 			WithExec([]string{"sh", "-c", "elixir /sdk/template.exs gen_mix_exs " + mod + " > " + mod + "/mix.exs"}).
-			WithExec([]string{"sh", "-c", "elixir /sdk/template.exs gen_module " + mod + " > " + mod + "/lib/" + mod + ".ex"})
+			WithExec([]string{"sh", "-c", "elixir /sdk/template.exs gen_module " + mod + " > " + mod + "/lib/" + mod + ".ex"}).
+			WithExec([]string{"sh", "-c", "elixir /sdk/template.exs gen_application " + mod + " > " + mod + "/lib/" + mod + "/application.ex"}).
+			WithExec([]string{"sh", "-c", "elixir /sdk/template.exs gen_mix_task " + mod + " > " + mod + "/lib/mix/tasks/dagger.invoke.ex"})
 
 		return ctr, nil
 	}

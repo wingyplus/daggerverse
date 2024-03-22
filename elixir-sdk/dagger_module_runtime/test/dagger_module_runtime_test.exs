@@ -4,7 +4,7 @@ defmodule Dagger.ModuleRuntimeTest do
 
   test "store function information" do
     defmodule A do
-      use Dagger.ModuleRuntime
+      use Dagger.ModuleRuntime, name: "A"
 
       @function [
         args: [
@@ -27,7 +27,7 @@ defmodule Dagger.ModuleRuntimeTest do
            ]
 
     defmodule B do
-      use Dagger.ModuleRuntime
+      use Dagger.ModuleRuntime, name: "B"
 
       @function [
         args: [],
@@ -47,7 +47,7 @@ defmodule Dagger.ModuleRuntimeTest do
   test "raise when define with function != 2 arities" do
     assert_raise RuntimeError, fn ->
       defmodule RaiseArityError do
-        use Dagger.ModuleRuntime
+        use Dagger.ModuleRuntime, name: "RaiseArityError"
 
         @function [
           args: [],
@@ -61,7 +61,7 @@ defmodule Dagger.ModuleRuntimeTest do
   test "raise when define with defp" do
     assert_raise RuntimeError, fn ->
       defmodule RaiseDefp do
-        use Dagger.ModuleRuntime
+        use Dagger.ModuleRuntime, name: "RaiseDefp"
 
         @function [
           args: [],
@@ -74,7 +74,29 @@ defmodule Dagger.ModuleRuntimeTest do
     end
   end
 
+  test "store the module name" do
+    defmodule C do
+      use Dagger.ModuleRuntime, name: "C"
+
+      @function [
+        args: [
+          name: [type: :string]
+        ],
+        return: :string
+      ]
+      def hello(_self, args) do
+        "Hello, #{args.name}"
+      end
+    end
+
+    assert name_for(C) == "C"
+  end
+
+  defp name_for(module) do
+    Dagger.ModuleRuntime.Module.name_for(module)
+  end
+
   defp functions_for(module) do
-    module.__info__(:attributes) |> Keyword.fetch!(:functions)
+    Dagger.ModuleRuntime.Module.functions_for(module)
   end
 end
