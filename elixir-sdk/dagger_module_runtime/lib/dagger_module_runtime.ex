@@ -60,24 +60,6 @@ defmodule Dagger.ModuleRuntime do
     Dagger.close(dag)
   end
 
-  defp encode({:ok, result}) do
-    encode(result)
-  end
-
-  defp encode(%module{} = struct) do
-    if function_exported?(module, :id, 1) do
-      with {:ok, id} <- module.id(struct) do
-        encode(id)
-      end
-    else
-      encode(struct)
-    end
-  end
-
-  defp encode(result) do
-    Jason.encode(result)
-  end
-
   # NOTE: We can have only 1 module.
   def invoke(dag, _parent, "", _fn_name, _input_args) do
     # TODO: find the way on how to register multiple modules.
@@ -101,15 +83,56 @@ defmodule Dagger.ModuleRuntime do
 
   def invoke_function(module, ctx, _parent, fn_name, input_args) do
     fun = fn_name |> Macro.underscore() |> String.to_existing_atom()
+    fun_def = Dagger.ModuleRuntime.Module.get_function_definition(module, fun)
 
     args =
       Enum.into(input_args, %{}, fn arg ->
         {:ok, name} = Dagger.FunctionCallArgValue.name(arg)
-        {:ok, value} = Dagger.FunctionCallArgValue.value(arg)
-        {String.to_existing_atom(name), Jason.decode!(value)}
+        name = String.to_existing_atom(name)
+
+        value =
+          with {:ok, value} <- Dagger.FunctionCallArgValue.value(arg),
+               {:ok, value} <- Jason.decode(value) do
+            decode(value, fun_def[:args][name][:type], ctx.dag)
+          end
+
+        {name, value}
       end)
 
     {:ok, apply(module, fun, [ctx, args])}
+  end
+
+  # TODO: decode all possible type.
+
+  defp decode(value, :string, _) when is_binary(value) do
+    value
+  end
+
+  defp decode(value, module, dag) do
+    # NOTE: It feels like we really need a protocol for the module to 
+    # load the data from id.
+    ["Dagger", name] = Module.split(module)
+    name = Macro.underscore(name)
+    fun = String.to_existing_atom("load_#{name}_from_id")
+    apply(Dagger.Client, fun, [dag, value])
+  end
+
+  defp encode({:ok, result}) do
+    encode(result)
+  end
+
+  defp encode(%module{} = struct) do
+    if function_exported?(module, :id, 1) do
+      with {:ok, id} <- module.id(struct) do
+        encode(id)
+      end
+    else
+      encode(struct)
+    end
+  end
+
+  defp encode(result) do
+    Jason.encode(result)
   end
 
   defmacro __using__(opt) do

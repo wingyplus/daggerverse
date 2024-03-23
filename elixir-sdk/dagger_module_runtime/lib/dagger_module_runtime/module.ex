@@ -28,6 +28,11 @@ defmodule Dagger.ModuleRuntime.Module do
     |> Keyword.fetch!(:functions)
   end
 
+  def get_function_definition(module, name) do
+    functions_for(module)
+    |> Keyword.fetch!(name)
+  end
+
   defp define_object(dag, module) do
     mod_name = name_for(module)
     functions = functions_for(module)
