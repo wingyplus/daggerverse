@@ -165,6 +165,22 @@ defmodule Dagger.ModuleSource do
     }
   end
 
+  @doc "Load a directory from the caller optionally with a given view applied."
+  @spec resolve_directory_from_caller(t(), String.t(), [{:view_name, String.t() | nil}]) ::
+          Dagger.Directory.t()
+  def resolve_directory_from_caller(%__MODULE__{} = module_source, path, optional_args \\ []) do
+    selection =
+      module_source.selection
+      |> select("resolveDirectoryFromCaller")
+      |> put_arg("path", path)
+      |> maybe_put_arg("viewName", optional_args[:view_name])
+
+    %Dagger.Directory{
+      selection: selection,
+      client: module_source.client
+    }
+  end
+
   @doc "Load the source from its path on the caller's filesystem, including only needed+configured files and directories. Only valid for local sources."
   @spec resolve_from_caller(t()) :: Dagger.ModuleSource.t()
   def resolve_from_caller(%__MODULE__{} = module_source) do
@@ -193,6 +209,38 @@ defmodule Dagger.ModuleSource do
       module_source.selection |> select("sourceSubpath")
 
     execute(selection, module_source.client)
+  end
+
+  @doc "Retrieve a named view defined for this module source."
+  @spec view(t(), String.t()) :: Dagger.ModuleSourceView.t()
+  def view(%__MODULE__{} = module_source, name) do
+    selection =
+      module_source.selection |> select("view") |> put_arg("name", name)
+
+    %Dagger.ModuleSourceView{
+      selection: selection,
+      client: module_source.client
+    }
+  end
+
+  @doc "The named views defined for this module source, which are sets of directory filters that can be applied to directory arguments provided to functions."
+  @spec views(t()) :: {:ok, [Dagger.ModuleSourceView.t()]} | {:error, term()}
+  def views(%__MODULE__{} = module_source) do
+    selection =
+      module_source.selection |> select("views") |> select("id")
+
+    with {:ok, items} <- execute(selection, module_source.client) do
+      {:ok,
+       for %{"id" => id} <- items do
+         %Dagger.ModuleSourceView{
+           selection:
+             query()
+             |> select("loadModuleSourceViewFromID")
+             |> arg("id", id),
+           client: module_source.client
+         }
+       end}
+    end
   end
 
   @doc "Update the module source with a new context directory. Only valid for local sources."
@@ -252,6 +300,21 @@ defmodule Dagger.ModuleSource do
   def with_source_subpath(%__MODULE__{} = module_source, path) do
     selection =
       module_source.selection |> select("withSourceSubpath") |> put_arg("path", path)
+
+    %Dagger.ModuleSource{
+      selection: selection,
+      client: module_source.client
+    }
+  end
+
+  @doc "Update the module source with a new named view."
+  @spec with_view(t(), String.t(), [String.t()]) :: Dagger.ModuleSource.t()
+  def with_view(%__MODULE__{} = module_source, name, patterns) do
+    selection =
+      module_source.selection
+      |> select("withView")
+      |> put_arg("name", name)
+      |> put_arg("patterns", patterns)
 
     %Dagger.ModuleSource{
       selection: selection,

@@ -11,10 +11,31 @@ defmodule Dagger.ModuleRuntime.Module do
     |> Dagger.Module.with_object(define_object(dag, module))
   end
 
+  @doc """
+  Get the name of the given `module`.
+  """
+  def name_for(module) do
+    module.__info__(:attributes)
+    |> Keyword.fetch!(:name)
+    |> to_string()
+  end
+
+  @doc """
+  Get the function definitions of the given `module`.
+  """
+  def functions_for(module) do
+    module.__info__(:attributes)
+    |> Keyword.fetch!(:functions)
+  end
+
+  def get_function_definition(module, name) do
+    functions_for(module)
+    |> Keyword.fetch!(name)
+  end
+
   defp define_object(dag, module) do
-    attrs = module.__info__(:attributes)
-    mod_name = Keyword.fetch!(attrs, :name)
-    functions = Keyword.fetch!(attrs, :functions)
+    mod_name = name_for(module)
+    functions = functions_for(module)
 
     type_def =
       dag

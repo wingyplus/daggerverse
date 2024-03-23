@@ -11,14 +11,13 @@ defmodule Wttr.MixProject do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {Wttr.Application, []}
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:dagger, path: "../dagger", override: true},
@@ -26,3 +25,4 @@ defmodule Wttr.MixProject do
     ]
   end
 end
+

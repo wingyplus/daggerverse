@@ -88,10 +88,13 @@ defmodule Dagger.Directory do
   end
 
   @doc "Writes the contents of the directory to a path on the host."
-  @spec export(t(), String.t()) :: {:ok, boolean()} | {:error, term()}
-  def export(%__MODULE__{} = directory, path) do
+  @spec export(t(), String.t(), [{:wipe, boolean() | nil}]) :: {:ok, boolean()} | {:error, term()}
+  def export(%__MODULE__{} = directory, path, optional_args \\ []) do
     selection =
-      directory.selection |> select("export") |> put_arg("path", path)
+      directory.selection
+      |> select("export")
+      |> put_arg("path", path)
+      |> maybe_put_arg("wipe", optional_args[:wipe])
 
     execute(selection, directory.client)
   end
