@@ -64,6 +64,16 @@ defmodule Dagger.ModuleRuntime do
     encode(result)
   end
 
+  defp encode(%module{} = struct) do
+    if function_exported?(module, :id, 1) do
+      with {:ok, id} <- module.id(struct) do
+        encode(id)
+      end
+    else
+      encode(struct)
+    end
+  end
+
   defp encode(result) do
     Jason.encode(result)
   end

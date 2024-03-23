@@ -15,7 +15,7 @@ defmodule Dagger.ModuleRuntime.Registry do
   """
   def register(pid \\ __MODULE__, module) do
     name = Dagger.ModuleRuntime.Module.name_for(module)
-    fun = fn modules -> Map.put(modules, name, module) |> dbg() end
+    fun = fn modules -> Map.put(modules, name, module) end
     Agent.update(pid, fun)
   end
 
