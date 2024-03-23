@@ -80,13 +80,29 @@ defmodule Main do
       args: [
         string_arg: [type: :string]
       ],
-      return: :string
+      return: Dagger.Container
     ]
     def container_echo(self, args) do
       self.dag
       |> Dagger.Client.container()
       |> Dagger.Container.from("alpine:latest")
       |> Dagger.Container.with_exec(~w"echo \#{args.string_arg}")
+    end
+
+    @function [
+      args: [
+        directory_arg: [type: Dagger.Directory],
+        pattern: [type: :string]
+      ],
+      return: :string
+    ]
+    def grep_dir(self, %{directory_arg: directory, pattern: pattern}) do
+      self.dag
+      |> Dagger.Client.container()
+      |> Dagger.Container.from("alpine:latest")
+      |> Dagger.Container.with_mounted_directory("/mnt", directory)
+      |> Dagger.Container.with_workdir("/mnt")
+      |> Dagger.Container.with_exec(["grep", "-R", pattern, "."])
       |> Dagger.Container.stdout()
     end
   end
