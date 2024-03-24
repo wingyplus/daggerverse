@@ -9,7 +9,6 @@ defmodule Dagger.ModuleRuntime.Function do
     return = Keyword.fetch!(fun_def, :return)
 
     # TODO: function doc by retrieving from `@doc`.
-    # TODO: optional parameter
     dag
     |> Dagger.Client.function(Helper.camelize(name), define_type(dag, return))
     |> with_args(args, dag)
@@ -20,8 +19,18 @@ defmodule Dagger.ModuleRuntime.Function do
     |> Enum.reduce(fun_def, fn {name, info}, fun_def ->
       type = Keyword.fetch!(info, :type)
 
+      type_def =
+        define_type(dag, type)
+        |> then(fn type_def ->
+          if info[:optional] do
+            Dagger.TypeDef.with_optional(type_def, true)
+          else
+            type_def
+          end
+        end)
+
       fun_def
-      |> Dagger.Function.with_arg(name, define_type(dag, type))
+      |> Dagger.Function.with_arg(name, type_def)
     end)
   end
 

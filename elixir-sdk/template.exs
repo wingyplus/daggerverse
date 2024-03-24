@@ -1,6 +1,8 @@
 defmodule Main do
   require EEx
 
+  # TODO: group all `run` functions to only one clause for performance.
+
   def run(["gen_mix_exs", module]) do
     module = normalize_name(module)
 

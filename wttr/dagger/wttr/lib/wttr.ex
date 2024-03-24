@@ -32,4 +32,19 @@ defmodule Wttr do
     |> container_wttr(args)
     |> Dagger.Container.stdout()
   end
+
+  @function [
+    args: [
+      name: [type: :string, optional: true]
+    ],
+    return: :string
+  ]
+  def try_something(_self, args) do
+    name = args[:name]
+    if name do
+      "Hello, #{name}"
+    else
+      "Hello, Mr. No Name"
+    end
+  end
 end
