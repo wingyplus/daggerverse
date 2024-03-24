@@ -3,21 +3,31 @@
 This is experiment on module runtime for Elixir. Expected to merge into 
 upstream when it's looks soild.
 
-## How it works
+## Create the first module
 
-During code is generating, the runtime will create 3 applications to your 
-module:
-
-1. `dagger_module_runtime` - provides dsl and runtime for Dagger.
-2. `dagger` - the Dagger APIs.
-3. Your working module.
-
-## Using it
-
-Initialize it with `dagger init`:
+Create a new module with `dagger init` with named `potato`:
 
 ```
-$ dagger init --sdk=github.com/wingyplus/daggerverse/elixir-sdk <name>
+$ dagger init --sdk=github.com/wingyplus/daggerverse/elixir-sdk potato
+Initialized module potato in potato
+$ ls
+potato
+$ cd potato
 ```
 
-TBC
+Now let's see all available functions in this module.
+
+```
+$ dagger functions
+Name             Description
+container-echo   -
+grep-dir         -
+```
+
+Test calling the function `container-echo` by using `dagger call`.
+
+```
+$ dagger call container-echo --string-arg 'Hello, World' stdout
+Hello, World
+```
+
