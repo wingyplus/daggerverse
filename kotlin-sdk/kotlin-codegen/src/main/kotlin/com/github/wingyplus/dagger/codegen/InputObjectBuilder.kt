@@ -46,7 +46,7 @@ class InputObjectBuilder {
     private fun typeToClassName(name: String): ClassName {
         return when (name) {
             "String" -> ClassName("kotlin", "String")
-            "Integer" -> ClassName("kotlin", "Int")
+            "Int" -> ClassName("kotlin", "Int")
             "Float" -> ClassName("kotlin", "Double")
             "Boolean" -> ClassName("kotlin", "Boolean")
             "DateTime" -> TODO()
