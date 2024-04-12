@@ -2421,9 +2421,9 @@ public class LocalModuleSource(
   /**
    * The directory containing everything needed to load load and use the module.
    */
-  public fun contextDirectory(): Directory? {
+  public fun contextDirectory(): Directory {
     val newQueryBuilder = queryBuilder.select("contextDirectory")
-    return Directory?(newQueryBuilder, engineClient)
+    return Directory(newQueryBuilder, engineClient)
   }
 
   /**
@@ -2661,17 +2661,17 @@ public class ModuleSource(
   /**
    * If the source is a of kind git, the git source representation of it.
    */
-  public fun asGitSource(): GitModuleSource? {
+  public fun asGitSource(): GitModuleSource {
     val newQueryBuilder = queryBuilder.select("asGitSource")
-    return GitModuleSource?(newQueryBuilder, engineClient)
+    return GitModuleSource(newQueryBuilder, engineClient)
   }
 
   /**
    * If the source is of kind local, the local source representation of it.
    */
-  public fun asLocalSource(): LocalModuleSource? {
+  public fun asLocalSource(): LocalModuleSource {
     val newQueryBuilder = queryBuilder.select("asLocalSource")
-    return LocalModuleSource?(newQueryBuilder, engineClient)
+    return LocalModuleSource(newQueryBuilder, engineClient)
   }
 
   /**
@@ -2736,9 +2736,9 @@ public class ModuleSource(
   /**
    * The kind of source (e.g. local, git, etc.)
    */
-  public fun kind(): ModuleSourceKind {
+  public suspend fun kind(): ModuleSourceKind {
     val newQueryBuilder = queryBuilder.select("kind")
-    return ModuleSourceKind(newQueryBuilder, engineClient)
+    return engineClient.execute(newQueryBuilder)
   }
 
   /**
@@ -2951,9 +2951,9 @@ public class ObjectTypeDef(
   /**
    * The function used to construct new instances of this object, if any
    */
-  public fun `constructor`(): Function? {
+  public fun `constructor`(): Function {
     val newQueryBuilder = queryBuilder.select("constructor")
-    return Function?(newQueryBuilder, engineClient)
+    return Function(newQueryBuilder, engineClient)
   }
 
   /**
@@ -3069,9 +3069,9 @@ public class Port(
   /**
    * The transport layer protocol.
    */
-  public fun protocol(): NetworkProtocol {
+  public suspend fun protocol(): NetworkProtocol {
     val newQueryBuilder = queryBuilder.select("protocol")
-    return NetworkProtocol(newQueryBuilder, engineClient)
+    return engineClient.execute(newQueryBuilder)
   }
 }
 
@@ -3262,35 +3262,35 @@ public class TypeDef(
   /**
    * If kind is INPUT, the input-specific type definition. If kind is not INPUT, this will be null.
    */
-  public fun asInput(): InputTypeDef? {
+  public fun asInput(): InputTypeDef {
     val newQueryBuilder = queryBuilder.select("asInput")
-    return InputTypeDef?(newQueryBuilder, engineClient)
+    return InputTypeDef(newQueryBuilder, engineClient)
   }
 
   /**
    * If kind is INTERFACE, the interface-specific type definition. If kind is not INTERFACE, this
    * will be null.
    */
-  public fun asInterface(): InterfaceTypeDef? {
+  public fun asInterface(): InterfaceTypeDef {
     val newQueryBuilder = queryBuilder.select("asInterface")
-    return InterfaceTypeDef?(newQueryBuilder, engineClient)
+    return InterfaceTypeDef(newQueryBuilder, engineClient)
   }
 
   /**
    * If kind is LIST, the list-specific type definition. If kind is not LIST, this will be null.
    */
-  public fun asList(): ListTypeDef? {
+  public fun asList(): ListTypeDef {
     val newQueryBuilder = queryBuilder.select("asList")
-    return ListTypeDef?(newQueryBuilder, engineClient)
+    return ListTypeDef(newQueryBuilder, engineClient)
   }
 
   /**
    * If kind is OBJECT, the object-specific type definition. If kind is not OBJECT, this will be
    * null.
    */
-  public fun asObject(): ObjectTypeDef? {
+  public fun asObject(): ObjectTypeDef {
     val newQueryBuilder = queryBuilder.select("asObject")
-    return ObjectTypeDef?(newQueryBuilder, engineClient)
+    return ObjectTypeDef(newQueryBuilder, engineClient)
   }
 
   /**
@@ -3304,9 +3304,9 @@ public class TypeDef(
   /**
    * The kind of type this is (e.g. primitive, list, object).
    */
-  public fun kind(): TypeDefKind {
+  public suspend fun kind(): TypeDefKind {
     val newQueryBuilder = queryBuilder.select("kind")
-    return TypeDefKind(newQueryBuilder, engineClient)
+    return engineClient.execute(newQueryBuilder)
   }
 
   /**

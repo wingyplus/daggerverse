@@ -34,9 +34,12 @@ class ObjectBuilder {
                     .addParameters(requiredArgParameterSpecs + optionalArgParameterSpecs)
                     .addCode(codeBlockFromField(field))
 
-                if (returnScalar(field) || returnList(field)) {
+                if (returnScalar(field) || returnList(field) || returnEnum(field)) {
                     funSpec
                         .addModifiers(KModifier.SUSPEND)
+                        .returns(typeOf(field.type).copy(nullable = false))
+                } else if (returnObject(field)) {
+                    funSpec
                         .returns(typeOf(field.type).copy(nullable = false))
                 } else {
                     funSpec
@@ -72,8 +75,11 @@ class ObjectBuilder {
             .build()
     }
 
+
     private fun normalizeName(name: String): String {
-        if (name == "Query") { return "Client" }
+        if (name == "Query") {
+            return "Client"
+        }
         return name
     }
 
@@ -81,9 +87,12 @@ class ObjectBuilder {
         val builder = CodeBlock.builder()
             .addStatement("val newQueryBuilder = queryBuilder.select(%S)", field.name)
 
-        if (returnScalar(field) || returnList(field)) {
+        if (returnScalar(field) || returnList(field) || returnEnum(field)) {
             builder
                 .addStatement("return engineClient.execute(newQueryBuilder)", typeOf(field.type))
+        } else if (returnObject(field)) {
+            builder
+                .addStatement("return %T(newQueryBuilder, engineClient)", typeOf(field.type).copy(nullable = false))
         } else {
             builder
                 .addStatement("return %T(newQueryBuilder, engineClient)", typeOf(field.type))
@@ -97,6 +106,13 @@ class ObjectBuilder {
 
     private fun returnScalar(field: FieldValue) =
         field.type.kind == TypeKind.SCALAR || field.type.kind == TypeKind.NON_NULL && field.type.ofType!!.kind == TypeKind.SCALAR
+
+    private fun returnEnum(field: FieldValue) =
+        field.type.kind == TypeKind.ENUM || field.type.kind == TypeKind.NON_NULL && field.type.ofType!!.kind == TypeKind.ENUM
+
+
+    private fun returnObject(field: FieldValue) =
+        field.type.kind == TypeKind.OBJECT
 
     private fun typeOf(type: TypeRef): TypeName {
         if (type.kind == TypeKind.NON_NULL) {
