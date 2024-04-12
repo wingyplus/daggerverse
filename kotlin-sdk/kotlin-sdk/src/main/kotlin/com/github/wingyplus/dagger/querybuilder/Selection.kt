@@ -6,10 +6,7 @@ data class Selection(val field: String, val args: Array<Arg>? = null) {
         if (args != null) {
             builder
                 .append('(')
-                .append(args
-                    .map { arg -> formatArg(arg) }
-                    .joinToString(separator = ",")
-                )
+                .append(args.joinToString(separator = ",") { arg -> formatArg(arg) })
                 .append(')')
         }
         return builder.toString()
@@ -25,7 +22,7 @@ data class Selection(val field: String, val args: Array<Arg>? = null) {
             is Boolean -> "$value"
             is String -> formatStringValue(value)
             is List<*> -> formatListValue(value)
-            is ObjectArg -> formatObjectValue(value)
+            is ObjectArg -> formatObjectValue(value.toPairs())
             else -> TODO()
         }
     }
@@ -34,11 +31,11 @@ data class Selection(val field: String, val args: Array<Arg>? = null) {
         return "\"${value}\""
     }
 
-    private fun formatObjectValue(value: ObjectArg): String {
+    private fun formatObjectValue(value: List<Pair<String, Any>>): String {
         val builder = StringBuilder()
         builder.append('{')
         builder.append(
-            value.toPairs().joinToString(separator = ",") { pair -> "${pair.first}:${formatValue(pair.second)}" }
+            value.joinToString(separator = ",") { pair -> "${pair.first}:${formatValue(pair.second)}" }
         )
         builder.append('}')
         return builder.toString()
