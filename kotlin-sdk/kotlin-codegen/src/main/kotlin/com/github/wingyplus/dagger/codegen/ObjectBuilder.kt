@@ -1,9 +1,6 @@
 package com.github.wingyplus.dagger.codegen
 
-import com.github.wingyplus.dagger.graphql.FieldValue
-import com.github.wingyplus.dagger.graphql.FullType
-import com.github.wingyplus.dagger.graphql.TypeKind
-import com.github.wingyplus.dagger.graphql.TypeRef
+import com.github.wingyplus.dagger.graphql.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 
@@ -12,21 +9,17 @@ class ObjectBuilder {
         val functions = type
             .fields
             .map { field ->
-                val requiredArgs = field
-                    .args
-                    .filter { it.type.kind == TypeKind.NON_NULL }
-                    .sortedBy { it.name }
+                val (requiredArgs, optionalArgs) = splitArgs(field.args)
 
                 val requiredArgParameterSpecs =
-                    requiredArgs.map { ParameterSpec(it.name, typeOf(it.type)) }
+                    requiredArgs
+                        .sortedBy { it.name }
+                        .map { ParameterSpec(it.name, typeOf(it.type)) }
 
-                val optionalArgs = field
-                    .args
-                    .filterNot { it.type.kind == TypeKind.NON_NULL }
-                    .sortedBy { it.name }
-
-
-                val optionalArgParameterSpecs = optionalArgs.map { ParameterSpec(it.name, typeOf(it.type)) }
+                val optionalArgParameterSpecs =
+                    optionalArgs
+                        .sortedBy { it.name }
+                        .map { ParameterSpec(it.name, typeOf(it.type)) }
 
                 val funSpec = FunSpec
                     .builder(field.name)
@@ -84,8 +77,26 @@ class ObjectBuilder {
     }
 
     private fun codeBlockFromField(field: FieldValue): CodeBlock {
+        val (requiredArgs, optionalArgs) = splitArgs(field.args)
         val builder = CodeBlock.builder()
-            .addStatement("val newQueryBuilder = queryBuilder.select(%S)", field.name)
+
+        if (requiredArgs.isEmpty() && optionalArgs.isEmpty()) {
+            builder.addStatement("val newQueryBuilder = queryBuilder.select(%S)", field.name)
+        } else {
+            builder.addStatement(
+                "var args = emptyArray<%T>()",
+                ClassName("com.github.wingyplus.dagger.querybuilder", "Arg")
+            )
+            for (arg in requiredArgs) {
+                builder.addStatement("args += %L", toArgCodeBlock(arg))
+            }
+            for (arg in optionalArgs) {
+                builder.beginControlFlow("if (%L != null)", arg.name)
+                builder.addStatement("args += %L", toArgCodeBlock(arg))
+                builder.endControlFlow()
+            }
+            builder.addStatement("val newQueryBuilder = queryBuilder.select(%S, args = args)", field.name)
+        }
 
         if (returnScalar(field) || returnList(field) || returnEnum(field)) {
             builder
@@ -99,6 +110,21 @@ class ObjectBuilder {
         }
 
         return builder.build()
+    }
+
+    private fun toArgCodeBlock(arg: InputValue): CodeBlock {
+        return CodeBlock
+            .builder()
+            .add(
+                "%T(%S, %L)",
+                ClassName("com.github.wingyplus.dagger.querybuilder", "Arg"),
+                arg.name,
+                arg.name
+            ).build()
+    }
+
+    private fun splitArgs(args: Array<InputValue>): Pair<List<InputValue>, List<InputValue>> {
+        return args.partition { arg -> arg.type.kind == TypeKind.NON_NULL }
     }
 
     private fun returnList(field: FieldValue) =

@@ -1,5 +1,6 @@
 package com.github.wingyplus.dagger
 
+import com.github.wingyplus.dagger.querybuilder.Arg
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
@@ -64,7 +65,12 @@ public class Client(
     size: Int,
     uncompressed: String,
   ): Directory {
-    val newQueryBuilder = queryBuilder.select("blob")
+    var args = emptyArray<Arg>()
+    args += Arg("digest", digest)
+    args += Arg("size", size)
+    args += Arg("mediaType", mediaType)
+    args += Arg("uncompressed", uncompressed)
+    val newQueryBuilder = queryBuilder.select("blob", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -72,7 +78,9 @@ public class Client(
    * Retrieves a container builtin to the engine.
    */
   public fun builtinContainer(digest: String): Container {
-    val newQueryBuilder = queryBuilder.select("builtinContainer")
+    var args = emptyArray<Arg>()
+    args += Arg("digest", digest)
+    val newQueryBuilder = queryBuilder.select("builtinContainer", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -80,7 +88,9 @@ public class Client(
    * Constructs a cache volume for a given cache key.
    */
   public fun cacheVolume(key: String): CacheVolume {
-    val newQueryBuilder = queryBuilder.select("cacheVolume")
+    var args = emptyArray<Arg>()
+    args += Arg("key", key)
+    val newQueryBuilder = queryBuilder.select("cacheVolume", args = args)
     return CacheVolume(newQueryBuilder, engineClient)
   }
 
@@ -88,7 +98,9 @@ public class Client(
    * Checks if the current Dagger Engine is compatible with an SDK's required version.
    */
   public suspend fun checkVersionCompatibility(version: String): Boolean {
-    val newQueryBuilder = queryBuilder.select("checkVersionCompatibility")
+    var args = emptyArray<Arg>()
+    args += Arg("version", version)
+    val newQueryBuilder = queryBuilder.select("checkVersionCompatibility", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -104,7 +116,14 @@ public class Client(
    * Platform defaults to that of the builder's host.
    */
   public fun container(id: ContainerID?, platform: Platform?): Container {
-    val newQueryBuilder = queryBuilder.select("container")
+    var args = emptyArray<Arg>()
+    if (id != null) {
+      args += Arg("id", id)
+    }
+    if (platform != null) {
+      args += Arg("platform", platform)
+    }
+    val newQueryBuilder = queryBuilder.select("container", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -146,12 +165,18 @@ public class Client(
    * Creates an empty directory.
    */
   public fun directory(id: DirectoryID?): Directory {
-    val newQueryBuilder = queryBuilder.select("directory")
+    var args = emptyArray<Arg>()
+    if (id != null) {
+      args += Arg("id", id)
+    }
+    val newQueryBuilder = queryBuilder.select("directory", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
   public fun `file`(id: FileID): File {
-    val newQueryBuilder = queryBuilder.select("file")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("file", args = args)
     return File(newQueryBuilder, engineClient)
   }
 
@@ -159,7 +184,10 @@ public class Client(
    * Creates a function.
    */
   public fun function(name: String, returnType: TypeDefID): Function {
-    val newQueryBuilder = queryBuilder.select("function")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    args += Arg("returnType", returnType)
+    val newQueryBuilder = queryBuilder.select("function", args = args)
     return Function(newQueryBuilder, engineClient)
   }
 
@@ -167,7 +195,9 @@ public class Client(
    * Create a code generation result, given a directory containing the generated code.
    */
   public fun generatedCode(code: DirectoryID): GeneratedCode {
-    val newQueryBuilder = queryBuilder.select("generatedCode")
+    var args = emptyArray<Arg>()
+    args += Arg("code", code)
+    val newQueryBuilder = queryBuilder.select("generatedCode", args = args)
     return GeneratedCode(newQueryBuilder, engineClient)
   }
 
@@ -181,7 +211,21 @@ public class Client(
     sshAuthSocket: SocketID?,
     sshKnownHosts: String?,
   ): GitRepository {
-    val newQueryBuilder = queryBuilder.select("git")
+    var args = emptyArray<Arg>()
+    args += Arg("url", url)
+    if (keepGitDir != null) {
+      args += Arg("keepGitDir", keepGitDir)
+    }
+    if (experimentalServiceHost != null) {
+      args += Arg("experimentalServiceHost", experimentalServiceHost)
+    }
+    if (sshKnownHosts != null) {
+      args += Arg("sshKnownHosts", sshKnownHosts)
+    }
+    if (sshAuthSocket != null) {
+      args += Arg("sshAuthSocket", sshAuthSocket)
+    }
+    val newQueryBuilder = queryBuilder.select("git", args = args)
     return GitRepository(newQueryBuilder, engineClient)
   }
 
@@ -197,7 +241,12 @@ public class Client(
    * Returns a file containing an http remote url content.
    */
   public fun http(url: String, experimentalServiceHost: ServiceID?): File {
-    val newQueryBuilder = queryBuilder.select("http")
+    var args = emptyArray<Arg>()
+    args += Arg("url", url)
+    if (experimentalServiceHost != null) {
+      args += Arg("experimentalServiceHost", experimentalServiceHost)
+    }
+    val newQueryBuilder = queryBuilder.select("http", args = args)
     return File(newQueryBuilder, engineClient)
   }
 
@@ -205,7 +254,9 @@ public class Client(
    * Load a CacheVolume from its ID.
    */
   public fun loadCacheVolumeFromID(id: CacheVolumeID): CacheVolume {
-    val newQueryBuilder = queryBuilder.select("loadCacheVolumeFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadCacheVolumeFromID", args = args)
     return CacheVolume(newQueryBuilder, engineClient)
   }
 
@@ -213,7 +264,9 @@ public class Client(
    * Load a CodegenEnumValue from its ID.
    */
   public fun loadCodegenEnumValueFromID(id: CodegenEnumValueID): CodegenEnumValue {
-    val newQueryBuilder = queryBuilder.select("loadCodegenEnumValueFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadCodegenEnumValueFromID", args = args)
     return CodegenEnumValue(newQueryBuilder, engineClient)
   }
 
@@ -221,7 +274,9 @@ public class Client(
    * Load a CodegenExperimental from its ID.
    */
   public fun loadCodegenExperimentalFromID(id: CodegenExperimentalID): CodegenExperimental {
-    val newQueryBuilder = queryBuilder.select("loadCodegenExperimentalFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadCodegenExperimentalFromID", args = args)
     return CodegenExperimental(newQueryBuilder, engineClient)
   }
 
@@ -229,7 +284,9 @@ public class Client(
    * Load a CodegenField from its ID.
    */
   public fun loadCodegenFieldFromID(id: CodegenFieldID): CodegenField {
-    val newQueryBuilder = queryBuilder.select("loadCodegenFieldFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadCodegenFieldFromID", args = args)
     return CodegenField(newQueryBuilder, engineClient)
   }
 
@@ -237,7 +294,9 @@ public class Client(
    * Load a Codegen from its ID.
    */
   public fun loadCodegenFromID(id: CodegenID): Codegen {
-    val newQueryBuilder = queryBuilder.select("loadCodegenFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadCodegenFromID", args = args)
     return Codegen(newQueryBuilder, engineClient)
   }
 
@@ -245,7 +304,9 @@ public class Client(
    * Load a CodegenInputValue from its ID.
    */
   public fun loadCodegenInputValueFromID(id: CodegenInputValueID): CodegenInputValue {
-    val newQueryBuilder = queryBuilder.select("loadCodegenInputValueFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadCodegenInputValueFromID", args = args)
     return CodegenInputValue(newQueryBuilder, engineClient)
   }
 
@@ -253,7 +314,9 @@ public class Client(
    * Load a CodegenSchema from its ID.
    */
   public fun loadCodegenSchemaFromID(id: CodegenSchemaID): CodegenSchema {
-    val newQueryBuilder = queryBuilder.select("loadCodegenSchemaFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadCodegenSchemaFromID", args = args)
     return CodegenSchema(newQueryBuilder, engineClient)
   }
 
@@ -261,7 +324,9 @@ public class Client(
    * Load a CodegenType from its ID.
    */
   public fun loadCodegenTypeFromID(id: CodegenTypeID): CodegenType {
-    val newQueryBuilder = queryBuilder.select("loadCodegenTypeFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadCodegenTypeFromID", args = args)
     return CodegenType(newQueryBuilder, engineClient)
   }
 
@@ -269,7 +334,9 @@ public class Client(
    * Load a CodegenTypeRef from its ID.
    */
   public fun loadCodegenTypeRefFromID(id: CodegenTypeRefID): CodegenTypeRef {
-    val newQueryBuilder = queryBuilder.select("loadCodegenTypeRefFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadCodegenTypeRefFromID", args = args)
     return CodegenTypeRef(newQueryBuilder, engineClient)
   }
 
@@ -277,7 +344,9 @@ public class Client(
    * Load a Container from its ID.
    */
   public fun loadContainerFromID(id: ContainerID): Container {
-    val newQueryBuilder = queryBuilder.select("loadContainerFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadContainerFromID", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -285,7 +354,9 @@ public class Client(
    * Load a CurrentModule from its ID.
    */
   public fun loadCurrentModuleFromID(id: CurrentModuleID): CurrentModule {
-    val newQueryBuilder = queryBuilder.select("loadCurrentModuleFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadCurrentModuleFromID", args = args)
     return CurrentModule(newQueryBuilder, engineClient)
   }
 
@@ -293,7 +364,9 @@ public class Client(
    * Load a Directory from its ID.
    */
   public fun loadDirectoryFromID(id: DirectoryID): Directory {
-    val newQueryBuilder = queryBuilder.select("loadDirectoryFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadDirectoryFromID", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -301,7 +374,9 @@ public class Client(
    * Load a EnvVariable from its ID.
    */
   public fun loadEnvVariableFromID(id: EnvVariableID): EnvVariable {
-    val newQueryBuilder = queryBuilder.select("loadEnvVariableFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadEnvVariableFromID", args = args)
     return EnvVariable(newQueryBuilder, engineClient)
   }
 
@@ -309,7 +384,9 @@ public class Client(
    * Load a FieldTypeDef from its ID.
    */
   public fun loadFieldTypeDefFromID(id: FieldTypeDefID): FieldTypeDef {
-    val newQueryBuilder = queryBuilder.select("loadFieldTypeDefFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadFieldTypeDefFromID", args = args)
     return FieldTypeDef(newQueryBuilder, engineClient)
   }
 
@@ -317,7 +394,9 @@ public class Client(
    * Load a File from its ID.
    */
   public fun loadFileFromID(id: FileID): File {
-    val newQueryBuilder = queryBuilder.select("loadFileFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadFileFromID", args = args)
     return File(newQueryBuilder, engineClient)
   }
 
@@ -325,7 +404,9 @@ public class Client(
    * Load a FunctionArg from its ID.
    */
   public fun loadFunctionArgFromID(id: FunctionArgID): FunctionArg {
-    val newQueryBuilder = queryBuilder.select("loadFunctionArgFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadFunctionArgFromID", args = args)
     return FunctionArg(newQueryBuilder, engineClient)
   }
 
@@ -333,7 +414,9 @@ public class Client(
    * Load a FunctionCallArgValue from its ID.
    */
   public fun loadFunctionCallArgValueFromID(id: FunctionCallArgValueID): FunctionCallArgValue {
-    val newQueryBuilder = queryBuilder.select("loadFunctionCallArgValueFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadFunctionCallArgValueFromID", args = args)
     return FunctionCallArgValue(newQueryBuilder, engineClient)
   }
 
@@ -341,7 +424,9 @@ public class Client(
    * Load a FunctionCall from its ID.
    */
   public fun loadFunctionCallFromID(id: FunctionCallID): FunctionCall {
-    val newQueryBuilder = queryBuilder.select("loadFunctionCallFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadFunctionCallFromID", args = args)
     return FunctionCall(newQueryBuilder, engineClient)
   }
 
@@ -349,7 +434,9 @@ public class Client(
    * Load a Function from its ID.
    */
   public fun loadFunctionFromID(id: FunctionID): Function {
-    val newQueryBuilder = queryBuilder.select("loadFunctionFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadFunctionFromID", args = args)
     return Function(newQueryBuilder, engineClient)
   }
 
@@ -357,7 +444,9 @@ public class Client(
    * Load a GeneratedCode from its ID.
    */
   public fun loadGeneratedCodeFromID(id: GeneratedCodeID): GeneratedCode {
-    val newQueryBuilder = queryBuilder.select("loadGeneratedCodeFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadGeneratedCodeFromID", args = args)
     return GeneratedCode(newQueryBuilder, engineClient)
   }
 
@@ -365,7 +454,9 @@ public class Client(
    * Load a GitModuleSource from its ID.
    */
   public fun loadGitModuleSourceFromID(id: GitModuleSourceID): GitModuleSource {
-    val newQueryBuilder = queryBuilder.select("loadGitModuleSourceFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadGitModuleSourceFromID", args = args)
     return GitModuleSource(newQueryBuilder, engineClient)
   }
 
@@ -373,7 +464,9 @@ public class Client(
    * Load a GitRef from its ID.
    */
   public fun loadGitRefFromID(id: GitRefID): GitRef {
-    val newQueryBuilder = queryBuilder.select("loadGitRefFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadGitRefFromID", args = args)
     return GitRef(newQueryBuilder, engineClient)
   }
 
@@ -381,7 +474,9 @@ public class Client(
    * Load a GitRepository from its ID.
    */
   public fun loadGitRepositoryFromID(id: GitRepositoryID): GitRepository {
-    val newQueryBuilder = queryBuilder.select("loadGitRepositoryFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadGitRepositoryFromID", args = args)
     return GitRepository(newQueryBuilder, engineClient)
   }
 
@@ -389,7 +484,9 @@ public class Client(
    * Load a Host from its ID.
    */
   public fun loadHostFromID(id: HostID): Host {
-    val newQueryBuilder = queryBuilder.select("loadHostFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadHostFromID", args = args)
     return Host(newQueryBuilder, engineClient)
   }
 
@@ -397,7 +494,9 @@ public class Client(
    * Load a InputTypeDef from its ID.
    */
   public fun loadInputTypeDefFromID(id: InputTypeDefID): InputTypeDef {
-    val newQueryBuilder = queryBuilder.select("loadInputTypeDefFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadInputTypeDefFromID", args = args)
     return InputTypeDef(newQueryBuilder, engineClient)
   }
 
@@ -405,7 +504,9 @@ public class Client(
    * Load a InterfaceTypeDef from its ID.
    */
   public fun loadInterfaceTypeDefFromID(id: InterfaceTypeDefID): InterfaceTypeDef {
-    val newQueryBuilder = queryBuilder.select("loadInterfaceTypeDefFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadInterfaceTypeDefFromID", args = args)
     return InterfaceTypeDef(newQueryBuilder, engineClient)
   }
 
@@ -413,7 +514,9 @@ public class Client(
    * Load a Label from its ID.
    */
   public fun loadLabelFromID(id: LabelID): Label {
-    val newQueryBuilder = queryBuilder.select("loadLabelFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadLabelFromID", args = args)
     return Label(newQueryBuilder, engineClient)
   }
 
@@ -421,7 +524,9 @@ public class Client(
    * Load a ListTypeDef from its ID.
    */
   public fun loadListTypeDefFromID(id: ListTypeDefID): ListTypeDef {
-    val newQueryBuilder = queryBuilder.select("loadListTypeDefFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadListTypeDefFromID", args = args)
     return ListTypeDef(newQueryBuilder, engineClient)
   }
 
@@ -429,7 +534,9 @@ public class Client(
    * Load a LocalModuleSource from its ID.
    */
   public fun loadLocalModuleSourceFromID(id: LocalModuleSourceID): LocalModuleSource {
-    val newQueryBuilder = queryBuilder.select("loadLocalModuleSourceFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadLocalModuleSourceFromID", args = args)
     return LocalModuleSource(newQueryBuilder, engineClient)
   }
 
@@ -437,7 +544,9 @@ public class Client(
    * Load a ModuleDependency from its ID.
    */
   public fun loadModuleDependencyFromID(id: ModuleDependencyID): ModuleDependency {
-    val newQueryBuilder = queryBuilder.select("loadModuleDependencyFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadModuleDependencyFromID", args = args)
     return ModuleDependency(newQueryBuilder, engineClient)
   }
 
@@ -445,7 +554,9 @@ public class Client(
    * Load a Module from its ID.
    */
   public fun loadModuleFromID(id: ModuleID): Module {
-    val newQueryBuilder = queryBuilder.select("loadModuleFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadModuleFromID", args = args)
     return Module(newQueryBuilder, engineClient)
   }
 
@@ -453,7 +564,9 @@ public class Client(
    * Load a ModuleSource from its ID.
    */
   public fun loadModuleSourceFromID(id: ModuleSourceID): ModuleSource {
-    val newQueryBuilder = queryBuilder.select("loadModuleSourceFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadModuleSourceFromID", args = args)
     return ModuleSource(newQueryBuilder, engineClient)
   }
 
@@ -461,7 +574,9 @@ public class Client(
    * Load a ModuleSourceView from its ID.
    */
   public fun loadModuleSourceViewFromID(id: ModuleSourceViewID): ModuleSourceView {
-    val newQueryBuilder = queryBuilder.select("loadModuleSourceViewFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadModuleSourceViewFromID", args = args)
     return ModuleSourceView(newQueryBuilder, engineClient)
   }
 
@@ -469,7 +584,9 @@ public class Client(
    * Load a ObjectTypeDef from its ID.
    */
   public fun loadObjectTypeDefFromID(id: ObjectTypeDefID): ObjectTypeDef {
-    val newQueryBuilder = queryBuilder.select("loadObjectTypeDefFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadObjectTypeDefFromID", args = args)
     return ObjectTypeDef(newQueryBuilder, engineClient)
   }
 
@@ -477,7 +594,9 @@ public class Client(
    * Load a Port from its ID.
    */
   public fun loadPortFromID(id: PortID): Port {
-    val newQueryBuilder = queryBuilder.select("loadPortFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadPortFromID", args = args)
     return Port(newQueryBuilder, engineClient)
   }
 
@@ -485,7 +604,9 @@ public class Client(
    * Load a Secret from its ID.
    */
   public fun loadSecretFromID(id: SecretID): Secret {
-    val newQueryBuilder = queryBuilder.select("loadSecretFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadSecretFromID", args = args)
     return Secret(newQueryBuilder, engineClient)
   }
 
@@ -493,7 +614,9 @@ public class Client(
    * Load a Service from its ID.
    */
   public fun loadServiceFromID(id: ServiceID): Service {
-    val newQueryBuilder = queryBuilder.select("loadServiceFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadServiceFromID", args = args)
     return Service(newQueryBuilder, engineClient)
   }
 
@@ -501,7 +624,9 @@ public class Client(
    * Load a Socket from its ID.
    */
   public fun loadSocketFromID(id: SocketID): Socket {
-    val newQueryBuilder = queryBuilder.select("loadSocketFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadSocketFromID", args = args)
     return Socket(newQueryBuilder, engineClient)
   }
 
@@ -509,7 +634,9 @@ public class Client(
    * Load a Terminal from its ID.
    */
   public fun loadTerminalFromID(id: TerminalID): Terminal {
-    val newQueryBuilder = queryBuilder.select("loadTerminalFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadTerminalFromID", args = args)
     return Terminal(newQueryBuilder, engineClient)
   }
 
@@ -517,7 +644,9 @@ public class Client(
    * Load a TypeDef from its ID.
    */
   public fun loadTypeDefFromID(id: TypeDefID): TypeDef {
-    val newQueryBuilder = queryBuilder.select("loadTypeDefFromID")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("loadTypeDefFromID", args = args)
     return TypeDef(newQueryBuilder, engineClient)
   }
 
@@ -533,7 +662,12 @@ public class Client(
    * Create a new module dependency configuration from a module source and name
    */
   public fun moduleDependency(source: ModuleSourceID, name: String?): ModuleDependency {
-    val newQueryBuilder = queryBuilder.select("moduleDependency")
+    var args = emptyArray<Arg>()
+    args += Arg("source", source)
+    if (name != null) {
+      args += Arg("name", name)
+    }
+    val newQueryBuilder = queryBuilder.select("moduleDependency", args = args)
     return ModuleDependency(newQueryBuilder, engineClient)
   }
 
@@ -541,7 +675,12 @@ public class Client(
    * Create a new module source instance from a source ref string.
    */
   public fun moduleSource(refString: String, stable: Boolean?): ModuleSource {
-    val newQueryBuilder = queryBuilder.select("moduleSource")
+    var args = emptyArray<Arg>()
+    args += Arg("refString", refString)
+    if (stable != null) {
+      args += Arg("stable", stable)
+    }
+    val newQueryBuilder = queryBuilder.select("moduleSource", args = args)
     return ModuleSource(newQueryBuilder, engineClient)
   }
 
@@ -553,7 +692,15 @@ public class Client(
     description: String?,
     labels: List<PipelineLabel>,
   ): Client {
-    val newQueryBuilder = queryBuilder.select("pipeline")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    if (description != null) {
+      args += Arg("description", description)
+    }
+    if (labels != null) {
+      args += Arg("labels", labels)
+    }
+    val newQueryBuilder = queryBuilder.select("pipeline", args = args)
     return Client(newQueryBuilder, engineClient)
   }
 
@@ -561,7 +708,12 @@ public class Client(
    * Reference a secret by name.
    */
   public fun secret(name: String, accessor: String?): Secret {
-    val newQueryBuilder = queryBuilder.select("secret")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    if (accessor != null) {
+      args += Arg("accessor", accessor)
+    }
+    val newQueryBuilder = queryBuilder.select("secret", args = args)
     return Secret(newQueryBuilder, engineClient)
   }
 
@@ -571,7 +723,10 @@ public class Client(
    * The plaintext value is limited to a size of 128000 bytes.
    */
   public fun setSecret(name: String, plaintext: String): Secret {
-    val newQueryBuilder = queryBuilder.select("setSecret")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    args += Arg("plaintext", plaintext)
+    val newQueryBuilder = queryBuilder.select("setSecret", args = args)
     return Secret(newQueryBuilder, engineClient)
   }
 
@@ -579,7 +734,9 @@ public class Client(
    * Loads a socket by its ID.
    */
   public fun socket(id: SocketID): Socket {
-    val newQueryBuilder = queryBuilder.select("socket")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("socket", args = args)
     return Socket(newQueryBuilder, engineClient)
   }
 
@@ -617,7 +774,17 @@ public class Container(
     mediaTypes: ImageMediaTypes?,
     platformVariants: List<ContainerID>,
   ): File {
-    val newQueryBuilder = queryBuilder.select("asTarball")
+    var args = emptyArray<Arg>()
+    if (platformVariants != null) {
+      args += Arg("platformVariants", platformVariants)
+    }
+    if (forcedCompression != null) {
+      args += Arg("forcedCompression", forcedCompression)
+    }
+    if (mediaTypes != null) {
+      args += Arg("mediaTypes", mediaTypes)
+    }
+    val newQueryBuilder = queryBuilder.select("asTarball", args = args)
     return File(newQueryBuilder, engineClient)
   }
 
@@ -631,7 +798,21 @@ public class Container(
     secrets: List<SecretID>,
     target: String?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("build")
+    var args = emptyArray<Arg>()
+    args += Arg("context", context)
+    if (dockerfile != null) {
+      args += Arg("dockerfile", dockerfile)
+    }
+    if (target != null) {
+      args += Arg("target", target)
+    }
+    if (buildArgs != null) {
+      args += Arg("buildArgs", buildArgs)
+    }
+    if (secrets != null) {
+      args += Arg("secrets", secrets)
+    }
+    val newQueryBuilder = queryBuilder.select("build", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -649,7 +830,9 @@ public class Container(
    * Mounts are included.
    */
   public fun directory(path: String): Directory {
-    val newQueryBuilder = queryBuilder.select("directory")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("directory", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -665,7 +848,9 @@ public class Container(
    * Retrieves the value of the specified environment variable.
    */
   public suspend fun envVariable(name: String): String {
-    val newQueryBuilder = queryBuilder.select("envVariable")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    val newQueryBuilder = queryBuilder.select("envVariable", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -697,7 +882,9 @@ public class Container(
    * This currently works for Nvidia devices only.
    */
   public fun experimentalWithGPU(devices: List<String>): Container {
-    val newQueryBuilder = queryBuilder.select("experimentalWithGPU")
+    var args = emptyArray<Arg>()
+    args += Arg("devices", devices)
+    val newQueryBuilder = queryBuilder.select("experimentalWithGPU", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -714,7 +901,18 @@ public class Container(
     mediaTypes: ImageMediaTypes?,
     platformVariants: List<ContainerID>,
   ): Boolean {
-    val newQueryBuilder = queryBuilder.select("export")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    if (platformVariants != null) {
+      args += Arg("platformVariants", platformVariants)
+    }
+    if (forcedCompression != null) {
+      args += Arg("forcedCompression", forcedCompression)
+    }
+    if (mediaTypes != null) {
+      args += Arg("mediaTypes", mediaTypes)
+    }
+    val newQueryBuilder = queryBuilder.select("export", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -734,7 +932,9 @@ public class Container(
    * Mounts are included.
    */
   public fun `file`(path: String): File {
-    val newQueryBuilder = queryBuilder.select("file")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("file", args = args)
     return File(newQueryBuilder, engineClient)
   }
 
@@ -742,7 +942,9 @@ public class Container(
    * Initializes this container from a pulled base image.
    */
   public fun from(address: String): Container {
-    val newQueryBuilder = queryBuilder.select("from")
+    var args = emptyArray<Arg>()
+    args += Arg("address", address)
+    val newQueryBuilder = queryBuilder.select("from", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -767,7 +969,12 @@ public class Container(
    * Reads the container from an OCI tarball.
    */
   public fun `import`(source: FileID, tag: String?): Container {
-    val newQueryBuilder = queryBuilder.select("import")
+    var args = emptyArray<Arg>()
+    args += Arg("source", source)
+    if (tag != null) {
+      args += Arg("tag", tag)
+    }
+    val newQueryBuilder = queryBuilder.select("import", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -775,7 +982,9 @@ public class Container(
    * Retrieves the value of the specified label.
    */
   public suspend fun label(name: String): String {
-    val newQueryBuilder = queryBuilder.select("label")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    val newQueryBuilder = queryBuilder.select("label", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -803,7 +1012,15 @@ public class Container(
     description: String?,
     labels: List<PipelineLabel>,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("pipeline")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    if (description != null) {
+      args += Arg("description", description)
+    }
+    if (labels != null) {
+      args += Arg("labels", labels)
+    }
+    val newQueryBuilder = queryBuilder.select("pipeline", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -828,7 +1045,18 @@ public class Container(
     mediaTypes: ImageMediaTypes?,
     platformVariants: List<ContainerID>,
   ): String {
-    val newQueryBuilder = queryBuilder.select("publish")
+    var args = emptyArray<Arg>()
+    args += Arg("address", address)
+    if (platformVariants != null) {
+      args += Arg("platformVariants", platformVariants)
+    }
+    if (forcedCompression != null) {
+      args += Arg("forcedCompression", forcedCompression)
+    }
+    if (mediaTypes != null) {
+      args += Arg("mediaTypes", mediaTypes)
+    }
+    val newQueryBuilder = queryBuilder.select("publish", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -879,7 +1107,17 @@ public class Container(
     experimentalPrivilegedNesting: Boolean?,
     insecureRootCapabilities: Boolean?,
   ): Terminal {
-    val newQueryBuilder = queryBuilder.select("terminal")
+    var args = emptyArray<Arg>()
+    if (cmd != null) {
+      args += Arg("cmd", cmd)
+    }
+    if (experimentalPrivilegedNesting != null) {
+      args += Arg("experimentalPrivilegedNesting", experimentalPrivilegedNesting)
+    }
+    if (insecureRootCapabilities != null) {
+      args += Arg("insecureRootCapabilities", insecureRootCapabilities)
+    }
+    val newQueryBuilder = queryBuilder.select("terminal", args = args)
     return Terminal(newQueryBuilder, engineClient)
   }
 
@@ -895,7 +1133,9 @@ public class Container(
    * Configures default arguments for future commands.
    */
   public fun withDefaultArgs(args: List<String>): Container {
-    val newQueryBuilder = queryBuilder.select("withDefaultArgs")
+    var args = emptyArray<Arg>()
+    args += Arg("args", args)
+    val newQueryBuilder = queryBuilder.select("withDefaultArgs", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -907,7 +1147,15 @@ public class Container(
     experimentalPrivilegedNesting: Boolean?,
     insecureRootCapabilities: Boolean?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withDefaultTerminalCmd")
+    var args = emptyArray<Arg>()
+    args += Arg("args", args)
+    if (experimentalPrivilegedNesting != null) {
+      args += Arg("experimentalPrivilegedNesting", experimentalPrivilegedNesting)
+    }
+    if (insecureRootCapabilities != null) {
+      args += Arg("insecureRootCapabilities", insecureRootCapabilities)
+    }
+    val newQueryBuilder = queryBuilder.select("withDefaultTerminalCmd", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -921,7 +1169,19 @@ public class Container(
     include: List<String>,
     owner: String?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withDirectory")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("directory", directory)
+    if (exclude != null) {
+      args += Arg("exclude", exclude)
+    }
+    if (include != null) {
+      args += Arg("include", include)
+    }
+    if (owner != null) {
+      args += Arg("owner", owner)
+    }
+    val newQueryBuilder = queryBuilder.select("withDirectory", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -929,7 +1189,12 @@ public class Container(
    * Retrieves this container but with a different command entrypoint.
    */
   public fun withEntrypoint(args: List<String>, keepDefaultArgs: Boolean?): Container {
-    val newQueryBuilder = queryBuilder.select("withEntrypoint")
+    var args = emptyArray<Arg>()
+    args += Arg("args", args)
+    if (keepDefaultArgs != null) {
+      args += Arg("keepDefaultArgs", keepDefaultArgs)
+    }
+    val newQueryBuilder = queryBuilder.select("withEntrypoint", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -941,7 +1206,13 @@ public class Container(
     `value`: String,
     expand: Boolean?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withEnvVariable")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    args += Arg("value", value)
+    if (expand != null) {
+      args += Arg("expand", expand)
+    }
+    val newQueryBuilder = queryBuilder.select("withEnvVariable", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -957,7 +1228,27 @@ public class Container(
     skipEntrypoint: Boolean?,
     stdin: String?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withExec")
+    var args = emptyArray<Arg>()
+    args += Arg("args", args)
+    if (skipEntrypoint != null) {
+      args += Arg("skipEntrypoint", skipEntrypoint)
+    }
+    if (stdin != null) {
+      args += Arg("stdin", stdin)
+    }
+    if (redirectStdout != null) {
+      args += Arg("redirectStdout", redirectStdout)
+    }
+    if (redirectStderr != null) {
+      args += Arg("redirectStderr", redirectStderr)
+    }
+    if (experimentalPrivilegedNesting != null) {
+      args += Arg("experimentalPrivilegedNesting", experimentalPrivilegedNesting)
+    }
+    if (insecureRootCapabilities != null) {
+      args += Arg("insecureRootCapabilities", insecureRootCapabilities)
+    }
+    val newQueryBuilder = queryBuilder.select("withExec", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -976,7 +1267,18 @@ public class Container(
     experimentalSkipHealthcheck: Boolean?,
     protocol: NetworkProtocol?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withExposedPort")
+    var args = emptyArray<Arg>()
+    args += Arg("port", port)
+    if (protocol != null) {
+      args += Arg("protocol", protocol)
+    }
+    if (description != null) {
+      args += Arg("description", description)
+    }
+    if (experimentalSkipHealthcheck != null) {
+      args += Arg("experimentalSkipHealthcheck", experimentalSkipHealthcheck)
+    }
+    val newQueryBuilder = queryBuilder.select("withExposedPort", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -989,7 +1291,16 @@ public class Container(
     owner: String?,
     permissions: Int?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withFile")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("source", source)
+    if (permissions != null) {
+      args += Arg("permissions", permissions)
+    }
+    if (owner != null) {
+      args += Arg("owner", owner)
+    }
+    val newQueryBuilder = queryBuilder.select("withFile", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1002,7 +1313,16 @@ public class Container(
     owner: String?,
     permissions: Int?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withFiles")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("sources", sources)
+    if (permissions != null) {
+      args += Arg("permissions", permissions)
+    }
+    if (owner != null) {
+      args += Arg("owner", owner)
+    }
+    val newQueryBuilder = queryBuilder.select("withFiles", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1018,7 +1338,10 @@ public class Container(
    * Retrieves this container plus the given label.
    */
   public fun withLabel(name: String, `value`: String): Container {
-    val newQueryBuilder = queryBuilder.select("withLabel")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    args += Arg("value", value)
+    val newQueryBuilder = queryBuilder.select("withLabel", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1032,7 +1355,19 @@ public class Container(
     sharing: CacheSharingMode?,
     source: DirectoryID?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withMountedCache")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("cache", cache)
+    if (source != null) {
+      args += Arg("source", source)
+    }
+    if (sharing != null) {
+      args += Arg("sharing", sharing)
+    }
+    if (owner != null) {
+      args += Arg("owner", owner)
+    }
+    val newQueryBuilder = queryBuilder.select("withMountedCache", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1044,7 +1379,13 @@ public class Container(
     source: DirectoryID,
     owner: String?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withMountedDirectory")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("source", source)
+    if (owner != null) {
+      args += Arg("owner", owner)
+    }
+    val newQueryBuilder = queryBuilder.select("withMountedDirectory", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1056,7 +1397,13 @@ public class Container(
     source: FileID,
     owner: String?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withMountedFile")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("source", source)
+    if (owner != null) {
+      args += Arg("owner", owner)
+    }
+    val newQueryBuilder = queryBuilder.select("withMountedFile", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1069,7 +1416,16 @@ public class Container(
     mode: Int?,
     owner: String?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withMountedSecret")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("source", source)
+    if (owner != null) {
+      args += Arg("owner", owner)
+    }
+    if (mode != null) {
+      args += Arg("mode", mode)
+    }
+    val newQueryBuilder = queryBuilder.select("withMountedSecret", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1077,7 +1433,9 @@ public class Container(
    * Retrieves this container plus a temporary directory mounted at the given path.
    */
   public fun withMountedTemp(path: String): Container {
-    val newQueryBuilder = queryBuilder.select("withMountedTemp")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("withMountedTemp", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1090,7 +1448,18 @@ public class Container(
     owner: String?,
     permissions: Int?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withNewFile")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    if (contents != null) {
+      args += Arg("contents", contents)
+    }
+    if (permissions != null) {
+      args += Arg("permissions", permissions)
+    }
+    if (owner != null) {
+      args += Arg("owner", owner)
+    }
+    val newQueryBuilder = queryBuilder.select("withNewFile", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1102,7 +1471,11 @@ public class Container(
     secret: SecretID,
     username: String,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withRegistryAuth")
+    var args = emptyArray<Arg>()
+    args += Arg("address", address)
+    args += Arg("username", username)
+    args += Arg("secret", secret)
+    val newQueryBuilder = queryBuilder.select("withRegistryAuth", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1110,7 +1483,9 @@ public class Container(
    * Retrieves the container with the given directory mounted to /.
    */
   public fun withRootfs(directory: DirectoryID): Container {
-    val newQueryBuilder = queryBuilder.select("withRootfs")
+    var args = emptyArray<Arg>()
+    args += Arg("directory", directory)
+    val newQueryBuilder = queryBuilder.select("withRootfs", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1118,7 +1493,10 @@ public class Container(
    * Retrieves this container plus an env variable containing the given secret.
    */
   public fun withSecretVariable(name: String, secret: SecretID): Container {
-    val newQueryBuilder = queryBuilder.select("withSecretVariable")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    args += Arg("secret", secret)
+    val newQueryBuilder = queryBuilder.select("withSecretVariable", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1133,7 +1511,10 @@ public class Container(
    * The service dependency will also convey to any files or directories produced by the container.
    */
   public fun withServiceBinding(alias: String, service: ServiceID): Container {
-    val newQueryBuilder = queryBuilder.select("withServiceBinding")
+    var args = emptyArray<Arg>()
+    args += Arg("alias", alias)
+    args += Arg("service", service)
+    val newQueryBuilder = queryBuilder.select("withServiceBinding", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1145,7 +1526,13 @@ public class Container(
     source: SocketID,
     owner: String?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("withUnixSocket")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("source", source)
+    if (owner != null) {
+      args += Arg("owner", owner)
+    }
+    val newQueryBuilder = queryBuilder.select("withUnixSocket", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1153,7 +1540,9 @@ public class Container(
    * Retrieves this container with a different command user.
    */
   public fun withUser(name: String): Container {
-    val newQueryBuilder = queryBuilder.select("withUser")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    val newQueryBuilder = queryBuilder.select("withUser", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1161,7 +1550,9 @@ public class Container(
    * Retrieves this container with a different working directory.
    */
   public fun withWorkdir(path: String): Container {
-    val newQueryBuilder = queryBuilder.select("withWorkdir")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("withWorkdir", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1177,7 +1568,11 @@ public class Container(
    * Retrieves this container with an unset command entrypoint.
    */
   public fun withoutEntrypoint(keepDefaultArgs: Boolean?): Container {
-    val newQueryBuilder = queryBuilder.select("withoutEntrypoint")
+    var args = emptyArray<Arg>()
+    if (keepDefaultArgs != null) {
+      args += Arg("keepDefaultArgs", keepDefaultArgs)
+    }
+    val newQueryBuilder = queryBuilder.select("withoutEntrypoint", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1185,7 +1580,9 @@ public class Container(
    * Retrieves this container minus the given environment variable.
    */
   public fun withoutEnvVariable(name: String): Container {
-    val newQueryBuilder = queryBuilder.select("withoutEnvVariable")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    val newQueryBuilder = queryBuilder.select("withoutEnvVariable", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1193,7 +1590,12 @@ public class Container(
    * Unexpose a previously exposed port.
    */
   public fun withoutExposedPort(port: Int, protocol: NetworkProtocol?): Container {
-    val newQueryBuilder = queryBuilder.select("withoutExposedPort")
+    var args = emptyArray<Arg>()
+    args += Arg("port", port)
+    if (protocol != null) {
+      args += Arg("protocol", protocol)
+    }
+    val newQueryBuilder = queryBuilder.select("withoutExposedPort", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1211,7 +1613,9 @@ public class Container(
    * Retrieves this container minus the given environment label.
    */
   public fun withoutLabel(name: String): Container {
-    val newQueryBuilder = queryBuilder.select("withoutLabel")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    val newQueryBuilder = queryBuilder.select("withoutLabel", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1219,7 +1623,9 @@ public class Container(
    * Retrieves this container after unmounting everything at the given path.
    */
   public fun withoutMount(path: String): Container {
-    val newQueryBuilder = queryBuilder.select("withoutMount")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("withoutMount", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1227,7 +1633,9 @@ public class Container(
    * Retrieves this container without the registry authentication of a given address.
    */
   public fun withoutRegistryAuth(address: String): Container {
-    val newQueryBuilder = queryBuilder.select("withoutRegistryAuth")
+    var args = emptyArray<Arg>()
+    args += Arg("address", address)
+    val newQueryBuilder = queryBuilder.select("withoutRegistryAuth", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1235,7 +1643,9 @@ public class Container(
    * Retrieves this container with a previously added Unix socket removed.
    */
   public fun withoutUnixSocket(path: String): Container {
-    val newQueryBuilder = queryBuilder.select("withoutUnixSocket")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("withoutUnixSocket", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1314,7 +1724,15 @@ public class CurrentModule(
     exclude: List<String>,
     include: List<String>,
   ): Directory {
-    val newQueryBuilder = queryBuilder.select("workdir")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    if (exclude != null) {
+      args += Arg("exclude", exclude)
+    }
+    if (include != null) {
+      args += Arg("include", include)
+    }
+    val newQueryBuilder = queryBuilder.select("workdir", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1324,7 +1742,9 @@ public class CurrentModule(
    * directory, including any changes that may have been made to it during module function execution.
    */
   public fun workdirFile(path: String): File {
-    val newQueryBuilder = queryBuilder.select("workdirFile")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("workdirFile", args = args)
     return File(newQueryBuilder, engineClient)
   }
 }
@@ -1345,7 +1765,11 @@ public class Directory(
    * Load the directory as a Dagger module
    */
   public fun asModule(sourceRootPath: String?): Module {
-    val newQueryBuilder = queryBuilder.select("asModule")
+    var args = emptyArray<Arg>()
+    if (sourceRootPath != null) {
+      args += Arg("sourceRootPath", sourceRootPath)
+    }
+    val newQueryBuilder = queryBuilder.select("asModule", args = args)
     return Module(newQueryBuilder, engineClient)
   }
 
@@ -1353,7 +1777,9 @@ public class Directory(
    * Gets the difference between this directory and an another directory.
    */
   public fun diff(other: DirectoryID): Directory {
-    val newQueryBuilder = queryBuilder.select("diff")
+    var args = emptyArray<Arg>()
+    args += Arg("other", other)
+    val newQueryBuilder = queryBuilder.select("diff", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1361,7 +1787,9 @@ public class Directory(
    * Retrieves a directory at the given path.
    */
   public fun directory(path: String): Directory {
-    val newQueryBuilder = queryBuilder.select("directory")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("directory", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1375,7 +1803,23 @@ public class Directory(
     secrets: List<SecretID>,
     target: String?,
   ): Container {
-    val newQueryBuilder = queryBuilder.select("dockerBuild")
+    var args = emptyArray<Arg>()
+    if (platform != null) {
+      args += Arg("platform", platform)
+    }
+    if (dockerfile != null) {
+      args += Arg("dockerfile", dockerfile)
+    }
+    if (target != null) {
+      args += Arg("target", target)
+    }
+    if (buildArgs != null) {
+      args += Arg("buildArgs", buildArgs)
+    }
+    if (secrets != null) {
+      args += Arg("secrets", secrets)
+    }
+    val newQueryBuilder = queryBuilder.select("dockerBuild", args = args)
     return Container(newQueryBuilder, engineClient)
   }
 
@@ -1383,7 +1827,11 @@ public class Directory(
    * Returns a list of files and directories at the given path.
    */
   public suspend fun entries(path: String?): List<String> {
-    val newQueryBuilder = queryBuilder.select("entries")
+    var args = emptyArray<Arg>()
+    if (path != null) {
+      args += Arg("path", path)
+    }
+    val newQueryBuilder = queryBuilder.select("entries", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -1391,7 +1839,12 @@ public class Directory(
    * Writes the contents of the directory to a path on the host.
    */
   public suspend fun export(path: String, wipe: Boolean?): Boolean {
-    val newQueryBuilder = queryBuilder.select("export")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    if (wipe != null) {
+      args += Arg("wipe", wipe)
+    }
+    val newQueryBuilder = queryBuilder.select("export", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -1399,7 +1852,9 @@ public class Directory(
    * Retrieves a file at the given path.
    */
   public fun `file`(path: String): File {
-    val newQueryBuilder = queryBuilder.select("file")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("file", args = args)
     return File(newQueryBuilder, engineClient)
   }
 
@@ -1407,7 +1862,9 @@ public class Directory(
    * Returns a list of files and directories that matche the given pattern.
    */
   public suspend fun glob(pattern: String): List<String> {
-    val newQueryBuilder = queryBuilder.select("glob")
+    var args = emptyArray<Arg>()
+    args += Arg("pattern", pattern)
+    val newQueryBuilder = queryBuilder.select("glob", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -1427,7 +1884,15 @@ public class Directory(
     description: String?,
     labels: List<PipelineLabel>,
   ): Directory {
-    val newQueryBuilder = queryBuilder.select("pipeline")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    if (description != null) {
+      args += Arg("description", description)
+    }
+    if (labels != null) {
+      args += Arg("labels", labels)
+    }
+    val newQueryBuilder = queryBuilder.select("pipeline", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1448,7 +1913,16 @@ public class Directory(
     exclude: List<String>,
     include: List<String>,
   ): Directory {
-    val newQueryBuilder = queryBuilder.select("withDirectory")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("directory", directory)
+    if (exclude != null) {
+      args += Arg("exclude", exclude)
+    }
+    if (include != null) {
+      args += Arg("include", include)
+    }
+    val newQueryBuilder = queryBuilder.select("withDirectory", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1460,7 +1934,13 @@ public class Directory(
     source: FileID,
     permissions: Int?,
   ): Directory {
-    val newQueryBuilder = queryBuilder.select("withFile")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("source", source)
+    if (permissions != null) {
+      args += Arg("permissions", permissions)
+    }
+    val newQueryBuilder = queryBuilder.select("withFile", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1472,7 +1952,13 @@ public class Directory(
     sources: List<FileID>,
     permissions: Int?,
   ): Directory {
-    val newQueryBuilder = queryBuilder.select("withFiles")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("sources", sources)
+    if (permissions != null) {
+      args += Arg("permissions", permissions)
+    }
+    val newQueryBuilder = queryBuilder.select("withFiles", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1480,7 +1966,12 @@ public class Directory(
    * Retrieves this directory plus a new directory created at the given path.
    */
   public fun withNewDirectory(path: String, permissions: Int?): Directory {
-    val newQueryBuilder = queryBuilder.select("withNewDirectory")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    if (permissions != null) {
+      args += Arg("permissions", permissions)
+    }
+    val newQueryBuilder = queryBuilder.select("withNewDirectory", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1492,7 +1983,13 @@ public class Directory(
     path: String,
     permissions: Int?,
   ): Directory {
-    val newQueryBuilder = queryBuilder.select("withNewFile")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    args += Arg("contents", contents)
+    if (permissions != null) {
+      args += Arg("permissions", permissions)
+    }
+    val newQueryBuilder = queryBuilder.select("withNewFile", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1500,7 +1997,9 @@ public class Directory(
    * Retrieves this directory with all file/dir timestamps set to the given time.
    */
   public fun withTimestamps(timestamp: Int): Directory {
-    val newQueryBuilder = queryBuilder.select("withTimestamps")
+    var args = emptyArray<Arg>()
+    args += Arg("timestamp", timestamp)
+    val newQueryBuilder = queryBuilder.select("withTimestamps", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1508,7 +2007,9 @@ public class Directory(
    * Retrieves this directory with the directory at the given path removed.
    */
   public fun withoutDirectory(path: String): Directory {
-    val newQueryBuilder = queryBuilder.select("withoutDirectory")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("withoutDirectory", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -1516,7 +2017,9 @@ public class Directory(
    * Retrieves this directory with the file at the given path removed.
    */
   public fun withoutFile(path: String): Directory {
-    val newQueryBuilder = queryBuilder.select("withoutFile")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("withoutFile", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 }
@@ -1630,7 +2133,12 @@ public class File(
    * Writes the file to a file path on the host.
    */
   public suspend fun export(path: String, allowParentDirPath: Boolean?): Boolean {
-    val newQueryBuilder = queryBuilder.select("export")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    if (allowParentDirPath != null) {
+      args += Arg("allowParentDirPath", allowParentDirPath)
+    }
+    val newQueryBuilder = queryBuilder.select("export", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -1670,7 +2178,9 @@ public class File(
    * Retrieves this file with its created/modified timestamps set to the given time.
    */
   public fun withTimestamps(timestamp: Int): File {
-    val newQueryBuilder = queryBuilder.select("withTimestamps")
+    var args = emptyArray<Arg>()
+    args += Arg("timestamp", timestamp)
+    val newQueryBuilder = queryBuilder.select("withTimestamps", args = args)
     return File(newQueryBuilder, engineClient)
   }
 }
@@ -1738,7 +2248,16 @@ public class Function(
     defaultValue: JSON?,
     description: String?,
   ): Function {
-    val newQueryBuilder = queryBuilder.select("withArg")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    args += Arg("typeDef", typeDef)
+    if (description != null) {
+      args += Arg("description", description)
+    }
+    if (defaultValue != null) {
+      args += Arg("defaultValue", defaultValue)
+    }
+    val newQueryBuilder = queryBuilder.select("withArg", args = args)
     return Function(newQueryBuilder, engineClient)
   }
 
@@ -1746,7 +2265,9 @@ public class Function(
    * Returns the function with the given doc string.
    */
   public fun withDescription(description: String): Function {
-    val newQueryBuilder = queryBuilder.select("withDescription")
+    var args = emptyArray<Arg>()
+    args += Arg("description", description)
+    val newQueryBuilder = queryBuilder.select("withDescription", args = args)
     return Function(newQueryBuilder, engineClient)
   }
 }
@@ -1860,7 +2381,9 @@ public class FunctionCall(
    * Set the return value of the function call to the provided value.
    */
   public suspend fun returnValue(`value`: JSON): Void {
-    val newQueryBuilder = queryBuilder.select("returnValue")
+    var args = emptyArray<Arg>()
+    args += Arg("value", value)
+    val newQueryBuilder = queryBuilder.select("returnValue", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 }
@@ -1956,7 +2479,9 @@ public class GeneratedCode(
    * Set the list of paths to mark generated in version control.
    */
   public fun withVCSGeneratedPaths(paths: List<String>): GeneratedCode {
-    val newQueryBuilder = queryBuilder.select("withVCSGeneratedPaths")
+    var args = emptyArray<Arg>()
+    args += Arg("paths", paths)
+    val newQueryBuilder = queryBuilder.select("withVCSGeneratedPaths", args = args)
     return GeneratedCode(newQueryBuilder, engineClient)
   }
 
@@ -1964,7 +2489,9 @@ public class GeneratedCode(
    * Set the list of paths to ignore in version control.
    */
   public fun withVCSIgnoredPaths(paths: List<String>): GeneratedCode {
-    val newQueryBuilder = queryBuilder.select("withVCSIgnoredPaths")
+    var args = emptyArray<Arg>()
+    args += Arg("paths", paths)
+    val newQueryBuilder = queryBuilder.select("withVCSIgnoredPaths", args = args)
     return GeneratedCode(newQueryBuilder, engineClient)
   }
 }
@@ -2072,7 +2599,14 @@ public class GitRef(
    * The filesystem tree at this ref.
    */
   public fun tree(sshAuthSocket: SocketID?, sshKnownHosts: String?): Directory {
-    val newQueryBuilder = queryBuilder.select("tree")
+    var args = emptyArray<Arg>()
+    if (sshKnownHosts != null) {
+      args += Arg("sshKnownHosts", sshKnownHosts)
+    }
+    if (sshAuthSocket != null) {
+      args += Arg("sshAuthSocket", sshAuthSocket)
+    }
+    val newQueryBuilder = queryBuilder.select("tree", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 }
@@ -2093,7 +2627,9 @@ public class GitRepository(
    * Returns details of a branch.
    */
   public fun branch(name: String): GitRef {
-    val newQueryBuilder = queryBuilder.select("branch")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    val newQueryBuilder = queryBuilder.select("branch", args = args)
     return GitRef(newQueryBuilder, engineClient)
   }
 
@@ -2101,7 +2637,9 @@ public class GitRepository(
    * Returns details of a commit.
    */
   public fun commit(id: String): GitRef {
-    val newQueryBuilder = queryBuilder.select("commit")
+    var args = emptyArray<Arg>()
+    args += Arg("id", id)
+    val newQueryBuilder = queryBuilder.select("commit", args = args)
     return GitRef(newQueryBuilder, engineClient)
   }
 
@@ -2125,7 +2663,9 @@ public class GitRepository(
    * Returns details of a ref.
    */
   public fun ref(name: String): GitRef {
-    val newQueryBuilder = queryBuilder.select("ref")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    val newQueryBuilder = queryBuilder.select("ref", args = args)
     return GitRef(newQueryBuilder, engineClient)
   }
 
@@ -2133,7 +2673,9 @@ public class GitRepository(
    * Returns details of a tag.
    */
   public fun tag(name: String): GitRef {
-    val newQueryBuilder = queryBuilder.select("tag")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    val newQueryBuilder = queryBuilder.select("tag", args = args)
     return GitRef(newQueryBuilder, engineClient)
   }
 }
@@ -2158,7 +2700,15 @@ public class Host(
     exclude: List<String>,
     include: List<String>,
   ): Directory {
-    val newQueryBuilder = queryBuilder.select("directory")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    if (exclude != null) {
+      args += Arg("exclude", exclude)
+    }
+    if (include != null) {
+      args += Arg("include", include)
+    }
+    val newQueryBuilder = queryBuilder.select("directory", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -2166,7 +2716,9 @@ public class Host(
    * Accesses a file on the host.
    */
   public fun `file`(path: String): File {
-    val newQueryBuilder = queryBuilder.select("file")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("file", args = args)
     return File(newQueryBuilder, engineClient)
   }
 
@@ -2182,7 +2734,12 @@ public class Host(
    * Creates a service that forwards traffic to a specified address via the host.
    */
   public fun service(ports: List<PortForward>, host: String?): Service {
-    val newQueryBuilder = queryBuilder.select("service")
+    var args = emptyArray<Arg>()
+    args += Arg("ports", ports)
+    if (host != null) {
+      args += Arg("host", host)
+    }
+    val newQueryBuilder = queryBuilder.select("service", args = args)
     return Service(newQueryBuilder, engineClient)
   }
 
@@ -2192,7 +2749,10 @@ public class Host(
    * The file is limited to a size of 512000 bytes.
    */
   public fun setSecretFile(name: String, path: String): Secret {
-    val newQueryBuilder = queryBuilder.select("setSecretFile")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("setSecretFile", args = args)
     return Secret(newQueryBuilder, engineClient)
   }
 
@@ -2204,7 +2764,15 @@ public class Host(
     native: Boolean?,
     ports: List<PortForward>,
   ): Service {
-    val newQueryBuilder = queryBuilder.select("tunnel")
+    var args = emptyArray<Arg>()
+    args += Arg("service", service)
+    if (ports != null) {
+      args += Arg("ports", ports)
+    }
+    if (native != null) {
+      args += Arg("native", native)
+    }
+    val newQueryBuilder = queryBuilder.select("tunnel", args = args)
     return Service(newQueryBuilder, engineClient)
   }
 
@@ -2212,7 +2780,9 @@ public class Host(
    * Accesses a Unix socket on the host.
    */
   public fun unixSocket(path: String): Socket {
-    val newQueryBuilder = queryBuilder.select("unixSocket")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("unixSocket", args = args)
     return Socket(newQueryBuilder, engineClient)
   }
 }
@@ -2578,7 +3148,9 @@ public class Module(
    * Retrieves the module with the given description
    */
   public fun withDescription(description: String): Module {
-    val newQueryBuilder = queryBuilder.select("withDescription")
+    var args = emptyArray<Arg>()
+    args += Arg("description", description)
+    val newQueryBuilder = queryBuilder.select("withDescription", args = args)
     return Module(newQueryBuilder, engineClient)
   }
 
@@ -2586,7 +3158,9 @@ public class Module(
    * This module plus the given Interface type and associated functions
    */
   public fun withInterface(iface: TypeDefID): Module {
-    val newQueryBuilder = queryBuilder.select("withInterface")
+    var args = emptyArray<Arg>()
+    args += Arg("iface", iface)
+    val newQueryBuilder = queryBuilder.select("withInterface", args = args)
     return Module(newQueryBuilder, engineClient)
   }
 
@@ -2594,7 +3168,9 @@ public class Module(
    * This module plus the given Object type and associated functions.
    */
   public fun withObject(`object`: TypeDefID): Module {
-    val newQueryBuilder = queryBuilder.select("withObject")
+    var args = emptyArray<Arg>()
+    args += Arg("object", object)
+    val newQueryBuilder = queryBuilder.select("withObject", args = args)
     return Module(newQueryBuilder, engineClient)
   }
 
@@ -2602,7 +3178,9 @@ public class Module(
    * Retrieves the module with basic configuration loaded if present.
    */
   public fun withSource(source: ModuleSourceID): Module {
-    val newQueryBuilder = queryBuilder.select("withSource")
+    var args = emptyArray<Arg>()
+    args += Arg("source", source)
+    val newQueryBuilder = queryBuilder.select("withSource", args = args)
     return Module(newQueryBuilder, engineClient)
   }
 }
@@ -2721,7 +3299,9 @@ public class ModuleSource(
    * subdir).
    */
   public fun directory(path: String): Directory {
-    val newQueryBuilder = queryBuilder.select("directory")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("directory", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -2771,7 +3351,9 @@ public class ModuleSource(
    * Resolve the provided module source arg as a dependency relative to this module source.
    */
   public fun resolveDependency(dep: ModuleSourceID): ModuleSource {
-    val newQueryBuilder = queryBuilder.select("resolveDependency")
+    var args = emptyArray<Arg>()
+    args += Arg("dep", dep)
+    val newQueryBuilder = queryBuilder.select("resolveDependency", args = args)
     return ModuleSource(newQueryBuilder, engineClient)
   }
 
@@ -2779,7 +3361,12 @@ public class ModuleSource(
    * Load a directory from the caller optionally with a given view applied.
    */
   public fun resolveDirectoryFromCaller(path: String, viewName: String?): Directory {
-    val newQueryBuilder = queryBuilder.select("resolveDirectoryFromCaller")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    if (viewName != null) {
+      args += Arg("viewName", viewName)
+    }
+    val newQueryBuilder = queryBuilder.select("resolveDirectoryFromCaller", args = args)
     return Directory(newQueryBuilder, engineClient)
   }
 
@@ -2814,7 +3401,9 @@ public class ModuleSource(
    * Retrieve a named view defined for this module source.
    */
   public fun view(name: String): ModuleSourceView {
-    val newQueryBuilder = queryBuilder.select("view")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    val newQueryBuilder = queryBuilder.select("view", args = args)
     return ModuleSourceView(newQueryBuilder, engineClient)
   }
 
@@ -2831,7 +3420,9 @@ public class ModuleSource(
    * Update the module source with a new context directory. Only valid for local sources.
    */
   public fun withContextDirectory(dir: DirectoryID): ModuleSource {
-    val newQueryBuilder = queryBuilder.select("withContextDirectory")
+    var args = emptyArray<Arg>()
+    args += Arg("dir", dir)
+    val newQueryBuilder = queryBuilder.select("withContextDirectory", args = args)
     return ModuleSource(newQueryBuilder, engineClient)
   }
 
@@ -2839,7 +3430,9 @@ public class ModuleSource(
    * Append the provided dependencies to the module source's dependency list.
    */
   public fun withDependencies(dependencies: List<ModuleDependencyID>): ModuleSource {
-    val newQueryBuilder = queryBuilder.select("withDependencies")
+    var args = emptyArray<Arg>()
+    args += Arg("dependencies", dependencies)
+    val newQueryBuilder = queryBuilder.select("withDependencies", args = args)
     return ModuleSource(newQueryBuilder, engineClient)
   }
 
@@ -2847,7 +3440,9 @@ public class ModuleSource(
    * Update the module source with a new name.
    */
   public fun withName(name: String): ModuleSource {
-    val newQueryBuilder = queryBuilder.select("withName")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    val newQueryBuilder = queryBuilder.select("withName", args = args)
     return ModuleSource(newQueryBuilder, engineClient)
   }
 
@@ -2855,7 +3450,9 @@ public class ModuleSource(
    * Update the module source with a new SDK.
    */
   public fun withSDK(sdk: String): ModuleSource {
-    val newQueryBuilder = queryBuilder.select("withSDK")
+    var args = emptyArray<Arg>()
+    args += Arg("sdk", sdk)
+    val newQueryBuilder = queryBuilder.select("withSDK", args = args)
     return ModuleSource(newQueryBuilder, engineClient)
   }
 
@@ -2863,7 +3460,9 @@ public class ModuleSource(
    * Update the module source with a new source subpath.
    */
   public fun withSourceSubpath(path: String): ModuleSource {
-    val newQueryBuilder = queryBuilder.select("withSourceSubpath")
+    var args = emptyArray<Arg>()
+    args += Arg("path", path)
+    val newQueryBuilder = queryBuilder.select("withSourceSubpath", args = args)
     return ModuleSource(newQueryBuilder, engineClient)
   }
 
@@ -2871,7 +3470,10 @@ public class ModuleSource(
    * Update the module source with a new named view.
    */
   public fun withView(name: String, patterns: List<String>): ModuleSource {
-    val newQueryBuilder = queryBuilder.select("withView")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    args += Arg("patterns", patterns)
+    val newQueryBuilder = queryBuilder.select("withView", args = args)
     return ModuleSource(newQueryBuilder, engineClient)
   }
 }
@@ -3142,7 +3744,14 @@ public class Service(
    * If a scheme is specified, a URL is returned. Otherwise, a host:port pair is returned.
    */
   public suspend fun endpoint(port: Int?, scheme: String?): String {
-    val newQueryBuilder = queryBuilder.select("endpoint")
+    var args = emptyArray<Arg>()
+    if (port != null) {
+      args += Arg("port", port)
+    }
+    if (scheme != null) {
+      args += Arg("scheme", scheme)
+    }
+    val newQueryBuilder = queryBuilder.select("endpoint", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -3184,7 +3793,11 @@ public class Service(
    * Stop the service.
    */
   public suspend fun stop(kill: Boolean?): ServiceID {
-    val newQueryBuilder = queryBuilder.select("stop")
+    var args = emptyArray<Arg>()
+    if (kill != null) {
+      args += Arg("kill", kill)
+    }
+    val newQueryBuilder = queryBuilder.select("stop", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 
@@ -3192,7 +3805,14 @@ public class Service(
    * Creates a tunnel that forwards traffic from the caller's network to this service.
    */
   public suspend fun up(ports: List<PortForward>, random: Boolean?): Void {
-    val newQueryBuilder = queryBuilder.select("up")
+    var args = emptyArray<Arg>()
+    if (ports != null) {
+      args += Arg("ports", ports)
+    }
+    if (random != null) {
+      args += Arg("random", random)
+    }
+    val newQueryBuilder = queryBuilder.select("up", args = args)
     return engineClient.execute(newQueryBuilder)
   }
 }
@@ -3322,7 +3942,9 @@ public class TypeDef(
    * not an object.
    */
   public fun withConstructor(function: FunctionID): TypeDef {
-    val newQueryBuilder = queryBuilder.select("withConstructor")
+    var args = emptyArray<Arg>()
+    args += Arg("function", function)
+    val newQueryBuilder = queryBuilder.select("withConstructor", args = args)
     return TypeDef(newQueryBuilder, engineClient)
   }
 
@@ -3334,7 +3956,13 @@ public class TypeDef(
     typeDef: TypeDefID,
     description: String?,
   ): TypeDef {
-    val newQueryBuilder = queryBuilder.select("withField")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    args += Arg("typeDef", typeDef)
+    if (description != null) {
+      args += Arg("description", description)
+    }
+    val newQueryBuilder = queryBuilder.select("withField", args = args)
     return TypeDef(newQueryBuilder, engineClient)
   }
 
@@ -3343,7 +3971,9 @@ public class TypeDef(
    * kinds.
    */
   public fun withFunction(function: FunctionID): TypeDef {
-    val newQueryBuilder = queryBuilder.select("withFunction")
+    var args = emptyArray<Arg>()
+    args += Arg("function", function)
+    val newQueryBuilder = queryBuilder.select("withFunction", args = args)
     return TypeDef(newQueryBuilder, engineClient)
   }
 
@@ -3351,7 +3981,12 @@ public class TypeDef(
    * Returns a TypeDef of kind Interface with the provided name.
    */
   public fun withInterface(name: String, description: String?): TypeDef {
-    val newQueryBuilder = queryBuilder.select("withInterface")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    if (description != null) {
+      args += Arg("description", description)
+    }
+    val newQueryBuilder = queryBuilder.select("withInterface", args = args)
     return TypeDef(newQueryBuilder, engineClient)
   }
 
@@ -3359,7 +3994,9 @@ public class TypeDef(
    * Sets the kind of the type.
    */
   public fun withKind(kind: TypeDefKind): TypeDef {
-    val newQueryBuilder = queryBuilder.select("withKind")
+    var args = emptyArray<Arg>()
+    args += Arg("kind", kind)
+    val newQueryBuilder = queryBuilder.select("withKind", args = args)
     return TypeDef(newQueryBuilder, engineClient)
   }
 
@@ -3367,7 +4004,9 @@ public class TypeDef(
    * Returns a TypeDef of kind List with the provided type for its elements.
    */
   public fun withListOf(elementType: TypeDefID): TypeDef {
-    val newQueryBuilder = queryBuilder.select("withListOf")
+    var args = emptyArray<Arg>()
+    args += Arg("elementType", elementType)
+    val newQueryBuilder = queryBuilder.select("withListOf", args = args)
     return TypeDef(newQueryBuilder, engineClient)
   }
 
@@ -3379,7 +4018,12 @@ public class TypeDef(
    * reference.
    */
   public fun withObject(name: String, description: String?): TypeDef {
-    val newQueryBuilder = queryBuilder.select("withObject")
+    var args = emptyArray<Arg>()
+    args += Arg("name", name)
+    if (description != null) {
+      args += Arg("description", description)
+    }
+    val newQueryBuilder = queryBuilder.select("withObject", args = args)
     return TypeDef(newQueryBuilder, engineClient)
   }
 
@@ -3387,7 +4031,9 @@ public class TypeDef(
    * Sets whether this type can be set to null.
    */
   public fun withOptional(optional: Boolean): TypeDef {
-    val newQueryBuilder = queryBuilder.select("withOptional")
+    var args = emptyArray<Arg>()
+    args += Arg("optional", optional)
+    val newQueryBuilder = queryBuilder.select("withOptional", args = args)
     return TypeDef(newQueryBuilder, engineClient)
   }
 }
