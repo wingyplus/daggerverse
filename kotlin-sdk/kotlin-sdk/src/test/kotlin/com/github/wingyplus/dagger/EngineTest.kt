@@ -20,4 +20,19 @@ class EngineTest {
 
         assertEquals("hello\n", result)
     }
+
+    @Test
+    fun `execute envVariables`() = runBlocking {
+        val queryBuilder = QueryBuilder()
+            .select("container")
+            .select("from", arrayOf(Arg("address", "alpine")))
+            .select("envVariables")
+            .select("id")
+
+        val result = Engine().use { engine ->
+            engine.execute<List<Map<String, String>>>(queryBuilder)
+        }
+
+        println(result)
+    }
 }

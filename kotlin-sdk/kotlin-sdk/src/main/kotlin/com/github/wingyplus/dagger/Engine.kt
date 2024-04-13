@@ -2,6 +2,7 @@ package com.github.wingyplus.dagger
 
 import com.github.wingyplus.dagger.graphql.Client
 import com.github.wingyplus.dagger.graphql.Query
+import io.ktor.util.reflect.*
 import kotlinx.serialization.json.*
 import java.io.Closeable
 
@@ -20,11 +21,15 @@ class Engine(
     }
 
     inline fun <reified T> unpack(data: JsonElement?, path: List<String>): T {
-        val element = path.fold(data) { json, selector ->
-            json!!.jsonObject[selector]
+        var json = data
+        for (selector in path) {
+            json = json!!.jsonObject[selector]
+            if (json!!.instanceOf(JsonArray::class)) {
+                break
+            }
         }
 
-        return Json.decodeFromJsonElement<T>(element!!)
+        return Json.decodeFromJsonElement<T>(json!!)
     }
 
     override fun close() {

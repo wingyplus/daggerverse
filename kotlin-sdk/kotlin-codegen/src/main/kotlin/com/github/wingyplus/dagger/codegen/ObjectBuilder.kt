@@ -48,20 +48,20 @@ class ObjectBuilder {
             .addKdoc(type.description)
             .primaryConstructor(
                 FunSpec.constructorBuilder()
-                    .addParameter("queryBuilder", ClassName("com.github.wingyplus.dagger", "QueryBuilder"))
-                    .addParameter("engineClient", ClassName("com.github.wingyplus.dagger", "Engine"))
+                    .addParameter("queryBuilder", ClassName(DAGGER_PACKAGE, "QueryBuilder"))
+                    .addParameter("engineClient", ClassName(DAGGER_PACKAGE, "Engine"))
                     .build()
             )
             .addFunctions(functions)
             .addProperty(
                 PropertySpec
-                    .builder("queryBuilder", ClassName("com.github.wingyplus.dagger", "QueryBuilder"))
+                    .builder("queryBuilder", ClassName(DAGGER_PACKAGE, "QueryBuilder"))
                     .initializer("queryBuilder")
                     .build()
             )
             .addProperty(
                 PropertySpec
-                    .builder("engineClient", ClassName("com.github.wingyplus.dagger", "Engine"))
+                    .builder("engineClient", ClassName(DAGGER_PACKAGE, "Engine"))
                     .initializer("engineClient")
                     .build()
             )
@@ -85,7 +85,7 @@ class ObjectBuilder {
         } else {
             builder.addStatement(
                 "var args = emptyArray<%T>()",
-                ClassName("com.github.wingyplus.dagger.querybuilder", "Arg")
+                ClassName(DAGGER_QUERYBUILDER_PACKAGE, "Arg")
             )
             for (arg in requiredArgs) {
                 builder.addStatement("args += %L", toArgCodeBlock(arg))
@@ -98,18 +98,47 @@ class ObjectBuilder {
             builder.addStatement("val newQueryBuilder = queryBuilder.select(%S, args = args)", field.name)
         }
 
-        if (returnScalar(field) || returnList(field) || returnEnum(field)) {
+        if (returnList(field, TypeKind.OBJECT)) {
+            builder.add(".select(%S)", "id")
+        }
+
+        if (returnScalar(field) || returnEnum(field) || returnList(field, TypeKind.SCALAR)) {
             builder
                 .addStatement("return engineClient.execute(newQueryBuilder)", typeOf(field.type))
-        } else if (returnObject(field)) {
+        } else if (returnList(field, TypeKind.OBJECT)) {
             builder
-                .addStatement("return %T(newQueryBuilder, engineClient)", typeOf(field.type).copy(nullable = false))
+                .addStatement(
+                    """
+                    return engineClient
+                        .execute<List<Map<String, String>>>(newQueryBuilder)
+                        .map {
+                            %T(
+                                QueryBuilder
+                                    .builder()
+                                    .select(%S, args = arrayOf(Arg("id", it["id"]!!))),
+                                engineClient
+                            )
+                        }
+                    """,
+                    typeOfList(field.type),
+                    loadFunction(field.type)
+                )
         } else {
+            val type = typeOf(field.type)
             builder
-                .addStatement("return %T(newQueryBuilder, engineClient)", typeOf(field.type))
+                .addStatement(
+                    "return %T(newQueryBuilder, engineClient)",
+                    if (returnObject(field)) type.copy(nullable = false) else type
+                )
         }
 
         return builder.build()
+    }
+
+    private fun loadFunction(type: TypeRef): String {
+        // NON_NULL -> LIST -> NON_NULL -> TYPE!
+        val aType = type.ofType!!.ofType!!.name
+        return "load${aType}FromID"
     }
 
     private fun toArgCodeBlock(arg: InputValue): CodeBlock {
@@ -117,7 +146,7 @@ class ObjectBuilder {
             .builder()
             .add(
                 "%T(%S, %L)",
-                ClassName("com.github.wingyplus.dagger.querybuilder", "Arg"),
+                ClassName(DAGGER_QUERYBUILDER_PACKAGE, "Arg"),
                 arg.name,
                 arg.name
             ).build()
@@ -130,6 +159,14 @@ class ObjectBuilder {
     private fun returnList(field: FieldValue) =
         field.type.kind == TypeKind.NON_NULL && field.type.ofType!!.kind == TypeKind.LIST
 
+    private fun returnList(field: FieldValue, nestedTypeKind: TypeKind): Boolean {
+        if (field.type.kind == TypeKind.NON_NULL && field.type.ofType!!.kind == TypeKind.LIST) {
+            return field.type.ofType.ofType!!.ofType!!.kind == nestedTypeKind
+        }
+        return false
+    }
+
+
     private fun returnScalar(field: FieldValue) =
         field.type.kind == TypeKind.SCALAR || field.type.kind == TypeKind.NON_NULL && field.type.ofType!!.kind == TypeKind.SCALAR
 
@@ -139,6 +176,17 @@ class ObjectBuilder {
 
     private fun returnObject(field: FieldValue) =
         field.type.kind == TypeKind.OBJECT
+
+    // Extract type inside the list.
+    private fun typeOfList(type: TypeRef): TypeName {
+        if (type.kind == TypeKind.NON_NULL) {
+            return typeOfList(type.ofType!!).copy(nullable = false)
+        }
+        if (type.kind == TypeKind.LIST) {
+            return typeOfList(type.ofType!!)
+        }
+        return typeToClassName(normalizeName(type.name)).copy(nullable = true)
+    }
 
     private fun typeOf(type: TypeRef): TypeName {
         if (type.kind == TypeKind.NON_NULL) {
@@ -157,7 +205,7 @@ class ObjectBuilder {
             "Float" -> ClassName("kotlin", "Double")
             "Boolean" -> ClassName("kotlin", "Boolean")
             "DateTime" -> TODO()
-            else -> ClassName("com.github.wingyplus.dagger", name)
+            else -> ClassName(DAGGER_PACKAGE, name)
         }
     }
 }

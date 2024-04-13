@@ -7,11 +7,10 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 
-
 class QueryBuilderTest {
     data class ObjectArgClz(val name: String, val value: String) : ObjectArg {
         override fun toPairs(): List<Pair<String, Any>> {
-                return listOf(Pair("name", name), Pair("value", value))
+            return listOf(Pair("name", name), Pair("value", value))
         }
     }
 
@@ -48,7 +47,7 @@ class QueryBuilderTest {
         )
 
         assertEquals(
-            Query(query="query{withArgs(obj:{name:\"n\",value:\"v\"})}"),
+            Query(query = "query{withArgs(obj:{name:\"n\",value:\"v\"})}"),
             QueryBuilder
                 .builder()
                 .select("withArgs", args = arrayOf(Arg("obj", ObjectArgClz("n", "v"))))
@@ -56,7 +55,7 @@ class QueryBuilderTest {
         )
 
         assertEquals(
-            Query(query="query{withArgs(bvalue:true)}"),
+            Query(query = "query{withArgs(bvalue:true)}"),
             QueryBuilder
                 .builder()
                 .select("withArgs", args = arrayOf(Arg("bvalue", true)))
