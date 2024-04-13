@@ -38,9 +38,9 @@ class InputObjectBuilder {
 
     private fun typeOf(type: TypeRef): TypeName {
         if (type.kind == TypeKind.NON_NULL) {
-            return typeToClassName(type.ofType!!.name)
+            return typeToClassName(type.ofType!!.name!!)
         }
-        return typeToClassName(type.name).copy(nullable = true)
+        return typeToClassName(type.name!!).copy(nullable = true)
     }
 
     private fun typeToClassName(name: String): ClassName {

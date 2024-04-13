@@ -19,7 +19,12 @@ class ObjectBuilder {
                 val optionalArgParameterSpecs =
                     optionalArgs
                         .sortedBy { it.name }
-                        .map { ParameterSpec(it.name, typeOf(it.type)) }
+                        .map {
+                            ParameterSpec
+                                .builder(it.name, typeOf(it.type).copy(nullable = true))
+                                .defaultValue("%L", null)
+                                .build()
+                        }
 
                 val funSpec = FunSpec
                     .builder(field.name)
@@ -184,7 +189,7 @@ class ObjectBuilder {
         if (type.kind == TypeKind.LIST) {
             return typeOfList(type.ofType!!)
         }
-        return typeToClassName(normalizeName(type.name)).copy(nullable = true)
+        return typeToClassName(normalizeName(type.name!!)).copy(nullable = true)
     }
 
     private fun typeOf(type: TypeRef): TypeName {
@@ -194,7 +199,7 @@ class ObjectBuilder {
         if (type.kind == TypeKind.LIST) {
             return LIST.parameterizedBy(typeOf(type.ofType!!))
         }
-        return typeToClassName(normalizeName(type.name)).copy(nullable = true)
+        return typeToClassName(normalizeName(type.name!!)).copy(nullable = true)
     }
 
     private fun typeToClassName(name: String): ClassName {

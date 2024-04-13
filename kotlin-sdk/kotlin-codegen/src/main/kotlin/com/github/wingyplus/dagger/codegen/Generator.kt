@@ -13,9 +13,11 @@ object Generator {
      */
     fun generate(introspection: Introspection): FileSpec {
         return introspection
+            .schema
             .types
             // We use type from standard library instead.
             .filter { type -> type.name !in listOf("Boolean", "String", "Int", "Float", "DateTime") }
+            .filter { type -> !type.name.startsWith("__") }
             .fold(FileSpec.builder(DAGGER_PACKAGE, "sdk.gen")) { builder, type ->
                 when (type.kind) {
                     TypeKind.SCALAR -> builder.addTypeAlias(ScalarBuilder().build(type))

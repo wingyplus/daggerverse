@@ -8,5 +8,4 @@ data class InputValue(
     val description: String,
     val type: TypeRef,
     val defaultValue: String?,
-    val nameWords: String
 )

@@ -1,8 +1,21 @@
 package com.github.wingyplus.dagger
 
-class Dagger {
-    // TODO: find the way to cleanup resource.
-//    fun connect(): Client {
-//        return Client(QueryBuilder(), Engine())
-//    }
+import java.io.Closeable
+
+class Dagger(val engine: Engine) : Closeable {
+
+    /**
+     * Returns a Dagger Client API instance.
+     */
+    fun client() = Client(QueryBuilder(), engine)
+
+    override fun close() {
+        engine.close()
+    }
+
+    companion object {
+        fun connect(): Dagger {
+            return Dagger(Engine())
+        }
+    }
 }

@@ -32,7 +32,5 @@ class EngineTest {
         val result = Engine().use { engine ->
             engine.execute<List<Map<String, String>>>(queryBuilder)
         }
-
-        println(result)
     }
 }
