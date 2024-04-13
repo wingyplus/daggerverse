@@ -39,7 +39,6 @@ class ObjectBuilder {
                         .returns(typeOf(field.type))
                 }
 
-
                 funSpec.build()
             }
 
@@ -68,7 +67,6 @@ class ObjectBuilder {
             .build()
     }
 
-
     private fun normalizeName(name: String): String {
         if (name == "Query") {
             return "Client"
@@ -85,7 +83,7 @@ class ObjectBuilder {
         } else {
             builder.addStatement(
                 "var args = emptyArray<%T>()",
-                ClassName(DAGGER_QUERYBUILDER_PACKAGE, "Arg")
+                ArgClassName
             )
             for (arg in requiredArgs) {
                 builder.addStatement("args += %L", toArgCodeBlock(arg))
@@ -149,7 +147,8 @@ class ObjectBuilder {
                 "%T(%S, %L)",
                 ArgClassName,
                 arg.name,
-                arg.name
+                // The literal doesn't escape this variable, but it does in function/method arguments.
+                arg.name.escapeIfKeyword()
             ).build()
     }
 
@@ -166,7 +165,6 @@ class ObjectBuilder {
         }
         return false
     }
-
 
     private fun returnScalar(field: FieldValue) =
         field.type.kind == TypeKind.SCALAR || field.type.kind == TypeKind.NON_NULL && field.type.ofType!!.kind == TypeKind.SCALAR

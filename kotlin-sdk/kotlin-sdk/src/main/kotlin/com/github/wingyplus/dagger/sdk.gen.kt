@@ -1280,7 +1280,7 @@ public class Container(
     ): Container {
         var args = emptyArray<Arg>()
         args += Arg("name", name)
-        args += Arg("value", value)
+        args += Arg("value", `value`)
         if (expand != null) {
             args += Arg("expand", expand)
         }
@@ -1412,7 +1412,7 @@ public class Container(
     public fun withLabel(name: String, `value`: String): Container {
         var args = emptyArray<Arg>()
         args += Arg("name", name)
-        args += Arg("value", value)
+        args += Arg("value", `value`)
         val newQueryBuilder = queryBuilder.select("withLabel", args = args)
         return Container(newQueryBuilder, engineClient)
     }
@@ -2490,7 +2490,7 @@ public class FunctionCall(
      */
     public suspend fun returnValue(`value`: JSON): Void {
         var args = emptyArray<Arg>()
-        args += Arg("value", value)
+        args += Arg("value", `value`)
         val newQueryBuilder = queryBuilder.select("returnValue", args = args)
         return engineClient.execute(newQueryBuilder)
     }
@@ -3385,7 +3385,7 @@ public class Module(
      */
     public fun withObject(`object`: TypeDefID): Module {
         var args = emptyArray<Arg>()
-        args += Arg("object", object)
+        args += Arg("object", `object`)
         val newQueryBuilder = queryBuilder.select("withObject", args = args)
         return Module(newQueryBuilder, engineClient)
     }
