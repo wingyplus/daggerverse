@@ -50,7 +50,7 @@ class InputObjectBuilder {
             "Float" -> ClassName("kotlin", "Double")
             "Boolean" -> ClassName("kotlin", "Boolean")
             "DateTime" -> TODO()
-            else -> ClassName("com.github.wingyplus.dagger", name)
+            else -> ClassName(DAGGER_PACKAGE, name)
         }
     }
 }

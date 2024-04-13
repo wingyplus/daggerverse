@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+
 package com.github.wingyplus.dagger.codegen
 
 import com.github.wingyplus.dagger.graphql.Introspection
@@ -14,7 +16,7 @@ object Generator {
             .types
             // We use type from standard library instead.
             .filter { type -> type.name !in listOf("Boolean", "String", "Int", "Float", "DateTime") }
-            .fold(FileSpec.builder("com.github.wingyplus.dagger", "sdk.gen")) { builder, type ->
+            .fold(FileSpec.builder(DAGGER_PACKAGE, "sdk.gen")) { builder, type ->
                 when (type.kind) {
                     TypeKind.SCALAR -> builder.addTypeAlias(ScalarBuilder().build(type))
                     TypeKind.INPUT_OBJECT -> builder.addType(InputObjectBuilder().build(type))

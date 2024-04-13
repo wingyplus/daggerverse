@@ -48,20 +48,20 @@ class ObjectBuilder {
             .addKdoc(type.description)
             .primaryConstructor(
                 FunSpec.constructorBuilder()
-                    .addParameter("queryBuilder", ClassName(DAGGER_PACKAGE, "QueryBuilder"))
-                    .addParameter("engineClient", ClassName(DAGGER_PACKAGE, "Engine"))
+                    .addParameter("queryBuilder", QueryBuilderClassName)
+                    .addParameter("engineClient", EngineClassName)
                     .build()
             )
             .addFunctions(functions)
             .addProperty(
                 PropertySpec
-                    .builder("queryBuilder", ClassName(DAGGER_PACKAGE, "QueryBuilder"))
+                    .builder("queryBuilder", QueryBuilderClassName)
                     .initializer("queryBuilder")
                     .build()
             )
             .addProperty(
                 PropertySpec
-                    .builder("engineClient", ClassName(DAGGER_PACKAGE, "Engine"))
+                    .builder("engineClient", EngineClassName)
                     .initializer("engineClient")
                     .build()
             )
@@ -113,7 +113,7 @@ class ObjectBuilder {
                         .execute<List<Map<String, String>>>(newQueryBuilder)
                         .map {
                             %T(
-                                QueryBuilder
+                                %T
                                     .builder()
                                     .select(%S, args = arrayOf(Arg("id", it["id"]!!))),
                                 engineClient
@@ -121,6 +121,7 @@ class ObjectBuilder {
                         }
                     """,
                     typeOfList(field.type),
+                    QueryBuilderClassName,
                     loadFunction(field.type)
                 )
         } else {
@@ -146,7 +147,7 @@ class ObjectBuilder {
             .builder()
             .add(
                 "%T(%S, %L)",
-                ClassName(DAGGER_QUERYBUILDER_PACKAGE, "Arg"),
+                ArgClassName,
                 arg.name,
                 arg.name
             ).build()
@@ -160,8 +161,8 @@ class ObjectBuilder {
         field.type.kind == TypeKind.NON_NULL && field.type.ofType!!.kind == TypeKind.LIST
 
     private fun returnList(field: FieldValue, nestedTypeKind: TypeKind): Boolean {
-        if (field.type.kind == TypeKind.NON_NULL && field.type.ofType!!.kind == TypeKind.LIST) {
-            return field.type.ofType.ofType!!.ofType!!.kind == nestedTypeKind
+        if (returnList(field)) {
+            return field.type.ofType!!.ofType!!.ofType!!.kind == nestedTypeKind
         }
         return false
     }
