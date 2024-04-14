@@ -18,7 +18,7 @@ class EnumBuilder {
             .addAnnotation(Serializable::class)
             .addKdoc(type.description)
         return type
-            .enumValues
+            .enumValues!!
             .fold(enumBuilder) { builder, enumValue ->
                 builder
                     .addEnumConstant(

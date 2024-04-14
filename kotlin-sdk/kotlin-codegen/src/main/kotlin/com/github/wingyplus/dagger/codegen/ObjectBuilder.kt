@@ -14,7 +14,7 @@ class ObjectBuilder {
 
     fun build(type: FullType): TypeSpec {
         val functions = type
-            .fields
+            .fields!!
             .map { field ->
                 val (requiredArgs, optionalArgs) = splitArgs(field.args)
 

@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 class InputObjectBuilder {
     fun build(type: FullType): TypeSpec {
         val funSpec = type
-            .inputFields
+            .inputFields!!
             .fold(FunSpec.constructorBuilder()) { builder, field ->
                 builder.addParameter(field.name, typeOf(field.type))
             }
@@ -24,8 +24,8 @@ class InputObjectBuilder {
 
         type
             .inputFields
-            .fold(typeSpec) { typeSpec, field ->
-                typeSpec.addProperty(
+            .fold(typeSpec) { spec, field ->
+                spec.addProperty(
                     PropertySpec
                         .builder(field.name, typeOf(field.type))
                         .initializer(field.name)

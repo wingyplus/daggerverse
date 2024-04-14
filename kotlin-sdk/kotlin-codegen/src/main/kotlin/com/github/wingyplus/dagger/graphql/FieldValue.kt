@@ -1,6 +1,5 @@
 package com.github.wingyplus.dagger.graphql
 
-import com.sun.org.apache.xpath.internal.operations.Bool
 import kotlinx.serialization.Serializable
 
 @Serializable
