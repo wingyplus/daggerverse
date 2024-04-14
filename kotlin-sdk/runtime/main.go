@@ -139,7 +139,14 @@ func (m *KotlinSdk) WithCodegen(introspectionJson string) *KotlinSdk {
 func (m *KotlinSdk) initProject(name string) WithContainerFunc {
 	return func(ctr *Container) *Container {
 		return ctr.WithExec([]string{
-			"sh", "-c", "gradle init --type kotlin-application --dsl kotlin --package dagger.mod --java-version 21 --no-split-project --use-defaults --project-name " + name,
+			"gradle", "init",
+			"--type", "kotlin-application",
+			"--dsl", "kotlin",
+			"--package", "dagger.mod",
+			"--java-version", "21",
+			"--no-split-project",
+			"--use-defaults",
+			"--project-name", name,
 		})
 	}
 }
