@@ -2,7 +2,7 @@ package com.github.wingyplus.dagger
 
 import java.io.Closeable
 
-class Dagger(val engine: Engine) : Closeable {
+class Dagger(private val engine: Engine) : Closeable {
 
     /**
      * Returns a Dagger Client API instance.

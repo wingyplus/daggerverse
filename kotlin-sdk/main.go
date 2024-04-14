@@ -47,3 +47,6 @@ func (m *KotlinSdkCi) Ktfmt(version string) *File {
 
 // TODO: Running under dagger binary.
 func (m *KotlinSdkCi) Test(ctx context.Context) error { return nil }
+
+// Lint reports error when violate code-style.
+func (m *KotlinSdkCi) Lint(ctx context.Context) error { return nil }

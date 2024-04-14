@@ -23,7 +23,7 @@ class QueryBuilder(private var queryTree: QueryTree? = null) {
         while (tree != null) {
             // Assume it's leaf node.
             if (query == "") {
-                query = "${tree.selection.format()}"
+                query = tree.selection.format()
             } else {
                 query = "${tree.selection.format()}{${query}}"
             }
