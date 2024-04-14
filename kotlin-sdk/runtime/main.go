@@ -8,6 +8,26 @@ import (
 
 const ModSourceDirPath = "/src"
 
+func New(
+	// +optional
+	sdkSourceDir *Directory,
+) *KotlinSdk {
+	// Use sdk source from GitHub instead.
+	if sdkSourceDir == nil {
+		sdkSourceDir = dag.
+			Git("https://github.com/wingyplus/daggerverse.git").
+			Branch("main").
+			Tree().
+			Directory("kotlin-sdk")
+	}
+	return &KotlinSdk{
+		SDKSourceDir:  sdkSourceDir.WithoutDirectory("runtime"),
+		RequiredPaths: []string{},
+		Container:     dag.Container(),
+		KtfmtVersion:  "0.47",
+	}
+}
+
 type KotlinSdk struct {
 	SDKSourceDir  *Directory
 	RequiredPaths []string
@@ -158,24 +178,4 @@ func (m *KotlinSdk) initProject(name string) WithContainerFunc {
 func (m *KotlinSdk) FormatCode(ctr *Container) *Container {
 	return ctr.
 		WithExec([]string{"ktfmt", "--kotlinlang-style", "app", "settings.gradle.kts"})
-}
-
-func New(
-	// +optional
-	sdkSourceDir *Directory,
-) *KotlinSdk {
-	// Use sdk source from GitHub instead.
-	if sdkSourceDir == nil {
-		sdkSourceDir = dag.
-			Git("https://github.com/wingyplus/daggerverse.git").
-			Branch("main").
-			Tree().
-			Directory("kotlin-sdk")
-	}
-	return &KotlinSdk{
-		SDKSourceDir:  sdkSourceDir.WithoutDirectory("runtime"),
-		RequiredPaths: []string{},
-		Container:     dag.Container(),
-		KtfmtVersion:  "0.47",
-	}
 }
