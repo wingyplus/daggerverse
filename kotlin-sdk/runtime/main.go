@@ -34,10 +34,13 @@ func (m *KotlinSdk) Codegen(ctx context.Context, modSource *ModuleSource, intros
 		return nil, err
 	}
 
+	codegen := ctr.Directory("/codegen/gen")
+
 	ctr = ctr.
 		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).
 		WithWorkdir(path.Join(ModSourceDirPath, subPath)).
 		With(m.initProject(name)).
+		WithDirectory("app/src/main/kotlin", codegen).
 		With(m.FormatCode)
 
 	gc := dag.
@@ -131,7 +134,8 @@ func (m *KotlinSdk) WithCodegen(introspectionJson string) *KotlinSdk {
 		WithNewFile("/codegen/introspection.json", ContainerWithNewFileOpts{
 			Contents: introspectionJson,
 		}).
-		WithWorkdir("/codegen")
+		WithWorkdir("/codegen").
+		WithExec([]string{"sh", "-c", "./gradlew run --args='-i /codegen/introspection.json -o gen'"})
 
 	return m
 }
