@@ -7,9 +7,9 @@ data class FullType(
     val kind: TypeKind,
     val name: String,
     val description: String,
-    val fields: Array<FieldValue>?,
-    val inputFields: Array<InputValue>?,
-    val enumValues: Array<EnumValue>?
+    val fields: Array<FieldValue>? = null,
+    val inputFields: Array<InputValue>? = null,
+    val enumValues: Array<EnumValue>? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
