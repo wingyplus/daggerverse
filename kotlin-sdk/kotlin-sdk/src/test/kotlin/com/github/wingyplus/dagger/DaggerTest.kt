@@ -11,7 +11,7 @@ class DaggerTest {
             dag
                 .client()
                 .container()
-                .from(address = "alpine:3.16.2")
+                .from("alpine:3.16.2")
                 .withExec(listOf("cat", "/etc/alpine-release"))
                 .stdout()
         }
@@ -21,8 +21,8 @@ class DaggerTest {
 
     @Test
     fun `list env variables`() = runBlocking {
-        val envNames = Dagger.connect().use { it ->
-            it
+        val envNames = Dagger.connect().use { dag ->
+            dag
                 .client()
                 .container()
                 .from(address = "alpine:3.16.2")

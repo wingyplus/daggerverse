@@ -86,19 +86,21 @@ class ObjectBuilder {
         if (requiredArgs.isEmpty() && optionalArgs.isEmpty()) {
             builder.addStatement("val newQueryBuilder = queryBuilder.select(%S)", field.name)
         } else {
+            val argumentsVar = "arguments"
             builder.addStatement(
-                "var args = emptyArray<%T>()",
+                "var %L = emptyArray<%T>()",
+                argumentsVar,
                 ArgClassName
             )
             for (arg in requiredArgs) {
-                builder.addStatement("args += %L", toArgCodeBlock(arg))
+                builder.addStatement("%L += %L", argumentsVar, toArgCodeBlock(arg))
             }
             for (arg in optionalArgs) {
                 builder.beginControlFlow("if (%L != null)", arg.name)
-                builder.addStatement("args += %L", toArgCodeBlock(arg))
+                builder.addStatement("%L += %L", argumentsVar, toArgCodeBlock(arg))
                 builder.endControlFlow()
             }
-            builder.addStatement("val newQueryBuilder = queryBuilder.select(%S, args = args)", field.name)
+            builder.addStatement("val newQueryBuilder = queryBuilder.select(%S, args = %L)", field.name, argumentsVar)
         }
 
         if (returnList(field, TypeKind.OBJECT)) {
@@ -141,7 +143,7 @@ class ObjectBuilder {
 
     private fun loadFunction(type: TypeRef): String {
         // NON_NULL -> LIST -> NON_NULL -> TYPE!
-        val aType = type.ofType!!.ofType!!.name
+        val aType = type.ofType!!.ofType!!.ofType!!.name
         return "load${aType}FromID"
     }
 
