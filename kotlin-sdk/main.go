@@ -18,13 +18,15 @@ func (m *KotlinSdkCi) Generate(ctx context.Context, introspectionJson *File) *Di
 // Codegen base.
 func (m *KotlinSdkCi) Codegen(introspectionJson *File) *Container {
 	dotGradle := dag.CacheVolume("dot-gradle")
+	gradleUserHome := dag.CacheVolume("gradle-user-home")
 	codegen := dag.CurrentModule().Source().Directory("kotlin-codegen")
 	return dag.Container().
 		From("openjdk:23-jdk-slim-bookworm").
+		WithMountedCache("/root/.gradle", gradleUserHome).
 		WithMountedDirectory("/codegen", codegen).
+		WithMountedCache("/codegen/.gradle", dotGradle).
 		WithMountedFile("/ktfmt.jar", m.Ktfmt("0.47")).
 		WithMountedFile("/codegen/introspection.json", introspectionJson).
-		WithMountedCache("/codegen/.gradle", dotGradle).
 		WithWorkdir("/codegen")
 }
 

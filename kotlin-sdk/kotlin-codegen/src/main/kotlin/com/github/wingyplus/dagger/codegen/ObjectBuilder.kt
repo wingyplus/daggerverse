@@ -4,7 +4,14 @@ import com.github.wingyplus.dagger.graphql.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 
+// TODO: accept a type and calling `id` method for any method that accept id type (except
+//       `load*` methods).
+// TODO: calling `load*` for any method that return id type to convert into the real type.
 class ObjectBuilder {
+    private val engineClientVar = "engineClient"
+    private val queryBuilderVar = "queryBuilder"
+    private val newQueryBuilderVar = "newQueryBuilder"
+
     fun build(type: FullType): TypeSpec {
         val functions = type
             .fields
@@ -52,21 +59,21 @@ class ObjectBuilder {
             .addKdoc(type.description)
             .primaryConstructor(
                 FunSpec.constructorBuilder()
-                    .addParameter("queryBuilder", QueryBuilderClassName)
-                    .addParameter("engineClient", EngineClassName)
+                    .addParameter(queryBuilderVar, QueryBuilderClassName)
+                    .addParameter(engineClientVar, EngineClassName)
                     .build()
             )
             .addFunctions(functions)
             .addProperty(
                 PropertySpec
-                    .builder("queryBuilder", QueryBuilderClassName)
-                    .initializer("queryBuilder")
+                    .builder(queryBuilderVar, QueryBuilderClassName)
+                    .initializer(queryBuilderVar)
                     .build()
             )
             .addProperty(
                 PropertySpec
-                    .builder("engineClient", EngineClassName)
-                    .initializer("engineClient")
+                    .builder(engineClientVar, EngineClassName)
+                    .initializer(engineClientVar)
                     .build()
             )
             .build()
@@ -84,7 +91,7 @@ class ObjectBuilder {
         val builder = CodeBlock.builder()
 
         if (requiredArgs.isEmpty() && optionalArgs.isEmpty()) {
-            builder.addStatement("val newQueryBuilder = queryBuilder.select(%S)", field.name)
+            builder.addStatement("val %L = %L.select(%S)", newQueryBuilderVar, queryBuilderVar, field.name)
         } else {
             val argumentsVar = "arguments"
             builder.addStatement(
@@ -100,7 +107,13 @@ class ObjectBuilder {
                 builder.addStatement("%L += %L", argumentsVar, toArgCodeBlock(arg))
                 builder.endControlFlow()
             }
-            builder.addStatement("val newQueryBuilder = queryBuilder.select(%S, args = %L)", field.name, argumentsVar)
+            builder.addStatement(
+                "val %L = %L.select(%S, args = %L)",
+                newQueryBuilderVar,
+                queryBuilderVar,
+                field.name,
+                argumentsVar
+            )
         }
 
         if (returnList(field, TypeKind.OBJECT)) {
@@ -109,13 +122,13 @@ class ObjectBuilder {
 
         if (returnScalar(field) || returnEnum(field) || returnList(field, TypeKind.SCALAR)) {
             builder
-                .addStatement("return engineClient.execute(newQueryBuilder)", typeOf(field.type))
+                .addStatement("return %L.execute(%L)", engineClientVar, newQueryBuilderVar)
         } else if (returnList(field, TypeKind.OBJECT)) {
             builder
                 .addStatement(
                     """
-                    return engineClient
-                        .execute<List<Map<String, String>>>(newQueryBuilder)
+                    return %L
+                        .execute<List<Map<String, String>>>(%L)
                         .map {
                             %T(
                                 %T
@@ -125,6 +138,8 @@ class ObjectBuilder {
                             )
                         }
                     """,
+                    engineClientVar,
+                    newQueryBuilderVar,
                     typeOfList(field.type),
                     QueryBuilderClassName,
                     loadFunction(field.type)
@@ -133,8 +148,10 @@ class ObjectBuilder {
             val type = typeOf(field.type)
             builder
                 .addStatement(
-                    "return %T(newQueryBuilder, engineClient)",
-                    if (returnObject(field)) type.copy(nullable = false) else type
+                    "return %T(%L, %L)",
+                    if (returnObject(field)) type.copy(nullable = false) else type,
+                    newQueryBuilderVar,
+                    engineClientVar
                 )
         }
 
