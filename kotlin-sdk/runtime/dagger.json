@@ -1,0 +1,5 @@
+{
+  "name": "kotlin-sdk",
+  "sdk": "go",
+  "engineVersion": "v0.11.0"
+}
