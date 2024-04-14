@@ -1,0 +1,4 @@
+.idea
+/dagger.gen.go
+/internal/dagger
+/internal/querybuilder
