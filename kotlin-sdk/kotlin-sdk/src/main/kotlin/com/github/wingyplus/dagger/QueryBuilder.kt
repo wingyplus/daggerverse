@@ -7,13 +7,11 @@ import com.github.wingyplus.dagger.querybuilder.Selection
 
 class QueryBuilder(private var queryTree: QueryTree? = null) {
     fun select(name: String): QueryBuilder {
-        queryTree = QueryTree(selection = Selection(field = name), parent = queryTree)
-        return this
+        return QueryBuilder(QueryTree(selection = Selection(field = name), parent = queryTree?.copy()))
     }
 
     fun select(name: String, args: Array<Arg>): QueryBuilder {
-        queryTree = QueryTree(selection = Selection(field = name, args = args), parent = queryTree)
-        return this
+        return QueryBuilder(QueryTree(selection = Selection(field = name, args = args), parent = queryTree?.copy()))
     }
 
     fun build(): Query {

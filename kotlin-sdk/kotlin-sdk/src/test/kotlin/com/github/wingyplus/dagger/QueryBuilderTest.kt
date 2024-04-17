@@ -74,4 +74,14 @@ class QueryBuilderTest {
         assertEquals(listOf("container", "from"), selectors)
     }
 
+    @Test
+    fun select_immutable() {
+        val builder = QueryBuilder
+            .builder()
+            .select("currentFunctionCall")
+
+        assertEquals(Query(query = "query{currentFunctionCall{parentName}}"), builder.select("parentName").build())
+        assertEquals(Query(query = "query{currentFunctionCall{name}}"), builder.select("name").build())
+    }
+
 }
