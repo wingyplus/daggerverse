@@ -18,12 +18,14 @@ class Engine(
      */
     suspend inline fun <reified T> execute(queryBuilder: QueryBuilder): T {
         val data = Json.parseToJsonElement(client.execute(queryBuilder.build())).jsonObject["data"]
-        return unpack(data, queryBuilder.path())
+        val json = unpack(data, queryBuilder.path())
+        return Json.decodeFromJsonElement<T>(json)
     }
 
-    inline fun <reified T> unpack(data: JsonElement?, path: List<String>): T {
+    fun unpack(data: JsonElement?, path: List<String>): JsonElement {
         var json = data
         for (selector in path) {
+            println(json!!::class)
             json = when (json!!) {
                 is JsonArray -> break
                 is JsonNull -> json.jsonNull
@@ -31,8 +33,7 @@ class Engine(
                 else -> throw Exception("Found incorrect type ${json::class}")
             }
         }
-
-        return Json.decodeFromJsonElement<T>(json!!)
+        return json!!
     }
 
     override fun close() {
