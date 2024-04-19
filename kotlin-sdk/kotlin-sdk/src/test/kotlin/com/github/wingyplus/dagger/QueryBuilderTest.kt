@@ -84,4 +84,17 @@ class QueryBuilderTest {
         assertEquals(Query(query = "query{currentFunctionCall{name}}"), builder.select("name").build())
     }
 
+    enum class AKind {
+        STRING_KIND
+    }
+
+    @Test
+    fun select_serialize_enum() {
+        val query = QueryBuilder
+            .builder()
+            .select("typeDef", args = arrayOf(Arg("kind", AKind.STRING_KIND)))
+            .build()
+
+        assertEquals(Query(query = "query{typeDef(kind:STRING_KIND)}"), query)
+    }
 }

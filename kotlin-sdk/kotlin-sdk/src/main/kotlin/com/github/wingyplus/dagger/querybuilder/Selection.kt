@@ -1,5 +1,7 @@
 package com.github.wingyplus.dagger.querybuilder
 
+import kotlin.reflect.full.isSubclassOf
+
 data class Selection(val field: String, val args: Array<Arg>? = null) {
     fun format(): String {
         var builder = StringBuilder(field)
@@ -23,7 +25,7 @@ data class Selection(val field: String, val args: Array<Arg>? = null) {
             is String -> formatStringValue(value)
             is List<*> -> formatListValue(value)
             is ObjectArg -> formatObjectValue(value.toPairs())
-            else -> TODO()
+            else -> if (value::class.isSubclassOf(Enum::class)) value.toString() else throw Exception("Cannot format value of type ${value::class}")
         }
     }
 

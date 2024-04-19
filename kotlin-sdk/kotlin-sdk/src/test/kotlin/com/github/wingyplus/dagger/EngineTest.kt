@@ -2,6 +2,8 @@ package com.github.wingyplus.dagger
 
 import com.github.wingyplus.dagger.querybuilder.Arg
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
