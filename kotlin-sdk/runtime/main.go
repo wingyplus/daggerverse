@@ -58,13 +58,8 @@ func (m *KotlinSdk) Codegen(ctx context.Context, modSource *ModuleSource, intros
 
 	ctr = ctr.
 		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).
-		WithWorkdir(path.Join(ModSourceDirPath, subPath))
-
-	if _, err := ctr.File("build.gradle.kts").Sync(ctx); err != nil {
-		ctr = ctr.With(m.initProject(name))
-	}
-
-	ctr.
+		WithWorkdir(path.Join(ModSourceDirPath, subPath)).
+		With(m.initProject(name)).
 		WithDirectory("app/src/main/kotlin", m.SDKSourceDir.Directory("kotlin-sdk/src/main/kotlin")).
 		WithDirectory("app/src/main/kotlin", codegen).
 		With(m.FormatCode)
@@ -82,6 +77,7 @@ func (m *KotlinSdk) Codegen(ctx context.Context, modSource *ModuleSource, intros
 			".gradle",
 			".idea",
 			"/app/build",
+			"/app/src/main/kotlin/com/github/wingyplus/dagger",
 		})
 
 	return gc, nil
@@ -107,7 +103,6 @@ func (m *KotlinSdk) ModuleRuntime(
 	dist := ctr.
 		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).
 		WithWorkdir(workdir).
-		WithExec([]string{"ls", "-lah"}).
 		WithExec([]string{"java", "-version"}).
 		WithExec([]string{"./gradlew", "build"}).
 		File("app/build/distributions/app.tar")

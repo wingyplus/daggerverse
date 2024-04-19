@@ -5,6 +5,7 @@ import com.github.wingyplus.dagger.graphql.Query
 import io.ktor.util.reflect.*
 import kotlinx.serialization.json.*
 import java.io.Closeable
+import kotlin.reflect.typeOf
 
 class Engine(
     token: String = System.getenv("DAGGER_SESSION_TOKEN"),
@@ -23,9 +24,11 @@ class Engine(
     inline fun <reified T> unpack(data: JsonElement?, path: List<String>): T {
         var json = data
         for (selector in path) {
-            json = json!!.jsonObject[selector]
-            if (json!!.instanceOf(JsonArray::class)) {
-                break
+            json = when (json!!) {
+                is JsonArray -> break
+                is JsonNull -> json.jsonNull
+                is JsonObject -> json.jsonObject[selector]
+                else -> throw Exception("Found incorrect type ${json::class}")
             }
         }
 

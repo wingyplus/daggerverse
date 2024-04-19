@@ -6,6 +6,7 @@ import com.github.wingyplus.dagger.querybuilder.ObjectArg
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
+typealias TryJSON = String
 
 class QueryBuilderTest {
     data class ObjectArgClz(val name: String, val value: String) : ObjectArg {
@@ -96,5 +97,16 @@ class QueryBuilderTest {
             .build()
 
         assertEquals(Query(query = "query{typeDef(kind:STRING_KIND)}"), query)
+    }
+
+
+    @Test
+    fun select_alias_type() {
+        val json: TryJSON = "abc"
+
+        val query = QueryBuilder
+            .builder()
+            .select("returnValue", args = arrayOf(Arg("value", json)))
+            .build()
     }
 }
