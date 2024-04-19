@@ -58,8 +58,14 @@ func (m *KotlinSdk) Codegen(ctx context.Context, modSource *ModuleSource, intros
 
 	ctr = ctr.
 		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).
-		WithWorkdir(path.Join(ModSourceDirPath, subPath)).
-		With(m.initProject(name)).
+		WithWorkdir(path.Join(ModSourceDirPath, subPath))
+
+	if _, err := ctr.File("build.gradle.kts").Sync(ctx); err != nil {
+		ctr = ctr.With(m.initProject(name))
+	}
+
+	ctr.
+		WithDirectory("app/src/main/kotlin", m.SDKSourceDir.Directory("kotlin-sdk/src/main/kotlin")).
 		WithDirectory("app/src/main/kotlin", codegen).
 		With(m.FormatCode)
 
@@ -75,6 +81,7 @@ func (m *KotlinSdk) Codegen(ctx context.Context, modSource *ModuleSource, intros
 		WithVCSIgnoredPaths([]string{
 			".gradle",
 			".idea",
+			"/app/build",
 		})
 
 	return gc, nil
@@ -85,7 +92,36 @@ func (m *KotlinSdk) ModuleRuntime(
 	modSource *ModuleSource,
 	introspectionJson string,
 ) (*Container, error) {
-	return dag.Container(), nil
+	ctr, err := m.Common(ctx, introspectionJson)
+	if err != nil {
+		return nil, err
+	}
+
+	subPath, err := modSource.SourceSubpath(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	workdir := path.Join(ModSourceDirPath, subPath)
+
+	dist := ctr.
+		WithMountedDirectory(ModSourceDirPath, modSource.ContextDirectory()).
+		WithWorkdir(workdir).
+		WithExec([]string{"ls", "-lah"}).
+		WithExec([]string{"java", "-version"}).
+		WithExec([]string{"./gradlew", "build"}).
+		File("app/build/distributions/app.tar")
+
+	ctr = dag.Container().
+		From("eclipse-temurin:21-jdk").
+		WithExec([]string{"apt", "update"}).
+		WithExec([]string{"apt", "install", "-y", "--no-install-recommends", "findutils"}).
+		WithFile("/app.tar", dist).
+		WithExec([]string{"tar", "xvf", "/app.tar"}).
+		WithWorkdir("/app").
+		WithEntrypoint([]string{"/app/bin/app"})
+
+	return ctr, nil
 }
 
 func (m *KotlinSdk) Common(ctx context.Context, introspectionJson string) (*Container, error) {
