@@ -1,0 +1,12 @@
+{
+  "name": "earthly",
+  "sdk": "go",
+  "dependencies": [
+    {
+      "name": "docker",
+      "source": "github.com/vito/daggerverse/docker@a1647750b3ef09b83091b40185f498bb995ed540"
+    }
+  ],
+  "source": ".",
+  "engineVersion": "v0.11.4"
+}
