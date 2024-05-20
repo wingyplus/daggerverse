@@ -4,7 +4,7 @@
   "dependencies": [
     {
       "name": "docker",
-      "source": "github.com/vito/daggerverse/docker@a1647750b3ef09b83091b40185f498bb995ed540"
+      "source": "github.com/shykes/daggerverse/docker@c9a80c9eac0675a53a7e052da3594207f4235988"
     }
   ],
   "source": ".",
