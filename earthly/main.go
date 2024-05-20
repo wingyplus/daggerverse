@@ -1,4 +1,4 @@
-// Provides a functionallity to run Earth
+// Allows the Earthly to run inside Dagger.
 
 package main
 
