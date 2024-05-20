@@ -2,4 +2,4 @@ VERSION 0.8
 
 run: 
 	FROM alpine
-	RUN echo hello, world
+	RUN echo hello

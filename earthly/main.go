@@ -7,21 +7,32 @@ import (
 )
 
 // TODO: support mTLS.
-// TODO: support custom registry auth.
 
 const workspacePath = "/workspace"
 
 func New(
 	// Source directory.
 	source *Directory,
+
+	// The Docker configuration. It's uses for authenticate with the registry
+	// auth
+	//
+	// +optional
+	dockerConfig *File,
 ) *Earthly {
-	return &Earthly{Source: source, Version: "v0.8.11"}
+	return &Earthly{Source: source, Version: "v0.8.11", DockerConfig: dockerConfig}
 }
 
 // Earthly module for dagger.
 type Earthly struct {
-	Source  *Directory
+	// +private
+	Source *Directory
+
+	// +private
 	Version string
+
+	// +private
+	DockerConfig *File
 }
 
 // Run earthly.
@@ -33,25 +44,31 @@ func (m *Earthly) Run(ctx context.Context, args []string) error {
 	return err
 }
 
+// Setup Earthly with mounting source into workspace.
 func (m *Earthly) WithEarthly() *Container {
 	config := `
 global:
   tls_enabled: false
 `
-	return dag.Container().
+	ctr := dag.Container().
 		From("earthly/earthly:"+m.Version).
 		WithServiceBinding("dockerd", m.DockerEngine()).
 		WithServiceBinding("buildkitd", m.Buildkitd()).
 		WithEnvVariable("DOCKER_HOST", "tcp://dockerd:2375").
 		WithEnvVariable("NO_BUILDKIT", "1").
 		WithEnvVariable("EARTHLY_BUILDKIT_HOST", "tcp://buildkitd:8372").
-		WithEnvVariable("BUILDKIT_TLS_ENABLED", "false").
 		WithNewFile("/root/.earthly/config.yml", ContainerWithNewFileOpts{
 			Contents: config,
 		}).
 		WithMountedDirectory(workspacePath, m.Source).
 		WithWorkdir(workspacePath).
 		WithoutEntrypoint()
+
+	if m.DockerConfig != nil {
+		ctr = ctr.WithMountedFile("/root/.docker/config.json", m.DockerConfig)
+	}
+
+	return ctr
 }
 
 func (m *Earthly) DockerEngine() *Service {
