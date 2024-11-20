@@ -1,0 +1,5 @@
+{
+  "name": "yq",
+  "engineVersion": "v0.14.0",
+  "sdk": "elixir"
+}
