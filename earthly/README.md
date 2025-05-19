@@ -1,5 +1,8 @@
 # Earthly module for Dagger
 
+> [!IMPORTANT]
+> This module is deprecated in favor of [Earthly SDK](https://github.com/wingyplus/dagger-earthly-sdk).
+
 This module allows the Earthly to run inside Dagger.
 
 ## Getting Started
