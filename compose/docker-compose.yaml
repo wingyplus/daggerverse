@@ -1,9 +1,0 @@
-name: dagger_compose
-version: '3'
-services:
-  nginx: 
-    image: nginx:alpine
-    ports:
-      - '8080:80'
-    environment:
-      HELLO: 'world'
