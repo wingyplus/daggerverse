@@ -20,7 +20,9 @@ func ComposeToServices(ctx context.Context, composeFile *dagger.File) (services 
 	}
 
 	for name, svc := range project.Services {
-		services[name] = toDaggerContainer(svc).AsService()
+		services[name] = toDaggerContainer(svc).AsService(dagger.ContainerAsServiceOpts{
+			UseEntrypoint: true,
+		})
 	}
 
 	return
@@ -51,9 +53,11 @@ func parseComposeFile(ctx context.Context, contents string) (*types.Project, err
 }
 
 func toDaggerContainer(svc types.ServiceConfig) *dagger.Container {
-	ctr := dag.Container().
-		From(svc.Image).
-		WithEntrypoint(svc.Entrypoint)
+	ctr := dag.Container().From(svc.Image)
+
+	if len(svc.Entrypoint) > 0 {
+		ctr.WithEntrypoint(svc.Entrypoint)
+	}
 
 	for _, port := range svc.Ports {
 		// TODO: support port protocol.

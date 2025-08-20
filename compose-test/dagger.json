@@ -1,0 +1,13 @@
+{
+  "name": "compose-test",
+  "engineVersion": "v0.18.14",
+  "sdk": {
+    "source": "go"
+  },
+  "dependencies": [
+    {
+      "name": "compose",
+      "source": "../compose"
+    }
+  ]
+}
